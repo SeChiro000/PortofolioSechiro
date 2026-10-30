@@ -5,7 +5,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // If deploying to username.github.io/repo-name, set basePath: '/repo-name'
+  basePath: '/PortofolioSechiro',
 };
 
 export default nextConfig;
