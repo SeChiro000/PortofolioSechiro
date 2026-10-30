@@ -1,0 +1,23 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "sechiro-portfolio",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-10-30",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": { "enabled": true },
+  "r2_buckets": [
+    { "binding": "PORTFOLIO_BUCKET", "bucket_name": "sechiro-portfolio-art" }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "sechiro-portfolio-guestbook",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ]
+}

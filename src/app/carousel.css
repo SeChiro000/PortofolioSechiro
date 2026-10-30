@@ -1,0 +1,501 @@
+/* Vinyl Turntable & Character Box CSS (SeChiro Exact Design Language - Enhanced) */
+
+.commissions-content { width:min(1200px,100%); margin:0 auto; padding:40px 0; }
+.commission-status-pill { display:inline-flex; align-items:center; gap:8px; margin-bottom:18px; padding:8px 14px; border:1px solid var(--blue); border-radius:999px; background:#fff; color:var(--blue); font:800 9px var(--font-syne),sans-serif; letter-spacing:.11em; }
+.commission-status-dot { width:8px; height:8px; border-radius:50%; background:#22a66a; box-shadow:0 0 0 3px rgba(34,166,106,.14); }
+.commission-status-pill.is-waitlist { background:#fff8d7; }.commission-status-pill.is-waitlist .commission-status-dot { background:#d4a91e; box-shadow:0 0 0 3px rgba(212,169,30,.15); }
+.commission-status-pill.is-closed { background:#f4f6fa; }.commission-status-pill.is-closed .commission-status-dot { background:#8b99a8; box-shadow:0 0 0 3px rgba(139,153,168,.15); }
+.commission-process { margin:0 0 50px; padding:28px clamp(20px,4vw,36px); border:1px solid var(--line); border-radius:16px; background:#fff8d7; }
+.commission-process-heading { display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; }
+.commission-process-heading .eyebrow { margin:0 0 6px; font:800 8px var(--font-syne),sans-serif; letter-spacing:.16em; }
+.commission-process-heading h3 { margin:0; font:800 23px var(--font-syne),sans-serif; letter-spacing:-.04em; }
+.commission-process-heading > span { color:#d4b600; font-size:30px; }
+.commission-process-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
+.commission-process-step { min-height:135px; padding:16px; border:1px solid var(--line); border-radius:12px; background:#fff; }
+.commission-process-step > span { color:#9a8110; font:800 9px var(--font-syne),sans-serif; letter-spacing:.12em; }
+.commission-process-step h4 { margin:12px 0 6px; font:800 13px var(--font-syne),sans-serif; }
+.commission-process-step p { margin:0; font-size:11px; line-height:1.5; opacity:.72; }
+.commission-inquiry-card { max-width:960px; margin:0 auto; scroll-margin-top:20vh; }
+.brief-character-count { align-self:flex-end; margin-top:-14px; color:rgba(40,85,138,.56); font-size:10px; }
+.copy-error-message { margin:0; color:#a23d3d; font-size:12px; text-align:center; }
+
+.vinyl-studio-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+  position: relative;
+}
+
+.characters-heading { max-width:1200px; margin:0 auto 34px; display:flex; align-items:flex-end; justify-content:space-between; gap:24px; }
+.characters-content { padding:40px 0; }
+.characters-heading-copy .eyebrow { margin:0 0 10px; color:#28558a; font:800 9px var(--font-syne),sans-serif; letter-spacing:.18em; }
+.characters-heading h2 span { color:transparent; -webkit-text-stroke:1.3px #28558a; }
+.characters-intro { margin:12px 0 0; color:rgba(40,85,138,.72); font:600 14px/1.5 var(--font-syne),sans-serif; }
+.crackle-toggle { flex:0 0 auto; display:flex; align-items:center; gap:9px; padding:11px 15px; border:1px solid #28558a; border-radius:999px; background:#fff; color:#28558a; font:800 9px var(--font-syne),sans-serif; letter-spacing:.1em; cursor:pointer; transition:background .2s,transform .2s; }
+.crackle-toggle:hover,.crackle-toggle.is-playing { background:#f6df58; transform:translateY(-2px); }
+.crackle-toggle span { font-size:16px; }
+.track-heading { width:100%; max-width:980px; display:flex; align-items:flex-end; justify-content:space-between; gap:16px; }
+.track-heading > div { display:grid; gap:5px; }
+.track-kicker,.track-count { color:rgba(40,85,138,.58); font:800 8px var(--font-syne),sans-serif; letter-spacing:.16em; }
+.track-label { font:800 clamp(17px,2.4vw,23px) var(--font-syne),sans-serif; letter-spacing:-.03em; text-transform:none; }
+.platter-invite { margin-top:30px; color:rgba(255,255,255,.74); font:600 11px/1.55 var(--font-syne),sans-serif; text-align:center; }
+
+/* --- STAGE SECTION --- */
+.vinyl-stage {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 440px));
+  align-items: center;
+  justify-content: center;
+  gap: clamp(24px, 4vw, 48px);
+  min-height: 480px;
+  position: relative;
+}
+
+/* Big Turntable Card (Matching SeChiro Hard Shadow Aesthetic) */
+.turntable-card {
+  width: 440px;
+  height: 440px;
+  background: #ffffff;
+  border: 3px solid #28558a;
+  border-radius: 28px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  z-index: 5;
+  transition: transform 0.3s ease;
+}
+
+.turntable-card:hover {
+  transform: translate(-4px, -4px);
+}
+
+/* Platter Base */
+.turntable-platter {
+  width: 360px;
+  height: 360px;
+  background: repeating-radial-gradient(circle, #28558a 0 8px, #32669e 9px 10px, #28558a 11px 18px);
+  border: 3px solid #28558a;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.empty-spindle {
+  width: 36px;
+  height: 36px;
+  background: #f6df58;
+  border: 3px solid #28558a;
+  border-radius: 50%;
+}
+
+.empty-text {
+  position: absolute;
+  font-family: var(--font-syne), sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  color: #f6df58;
+  letter-spacing: 0.15em;
+}
+
+/* Pure Flat Vinyl Disc (NO GRADIENT) with Grooves */
+.vinyl-disc {
+  width: 340px;
+  height: 340px;
+  border-radius: 50%;
+  background: repeating-radial-gradient(circle, #28558a 0 8px, #32669e 9px 10px, #28558a 11px 18px);
+  border: 4px solid #28558a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.vinyl-disc.spinning {
+  animation: spin-vinyl 16s linear infinite;
+}
+
+@keyframes spin-vinyl {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.vinyl-label {
+  width: 154px;
+  height: 154px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: #f6df58;
+  border: 3px solid #28558a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 8px;
+  position: relative;
+}
+
+.vinyl-label-text {
+  font-family: var(--font-syne), sans-serif;
+  font-weight: 800;
+  font-size: 11px;
+  color: #fff;
+  background: rgba(40,85,138,.88);
+  padding: 4px 9px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  max-width: 125px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  position: relative;
+  z-index: 2;
+  transform: translateY(48px);
+  white-space: nowrap;
+}
+.vinyl-label-art { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.vinyl-label-initials { color:#28558a; font:800 30px var(--font-syne),sans-serif; }
+
+.vinyl-center-hole {
+  width: 9px;
+  height: 9px;
+  background: #28558a;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  position: absolute;
+  z-index: 3;
+}
+
+/* Tonearm */
+.tonearm {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  width: 100px;
+  height: 170px;
+  pointer-events: none;
+  transform-origin: 80px 20px;
+  transition: transform 0.35s ease;
+  z-index: 4;
+  transform: rotate(20deg);
+}
+
+.tonearm.active {
+  transform: rotate(45deg);
+}
+
+.tonearm-base {
+  width: 36px;
+  height: 36px;
+  background: #f6df58;
+  border: 3px solid #28558a;
+  border-radius: 50%;
+  position: absolute;
+  top: 4px;
+  right: 4px;
+}
+
+.tonearm-stick {
+  width: 10px;
+  height: 130px;
+  background: #28558a;
+  border: 2.5px solid #28558a;
+  position: absolute;
+  top: 28px;
+  right: 18px;
+  border-radius: 4px;
+  transform: rotate(-10deg);
+  transform-origin: top center;
+}
+
+.tonearm-cartridge {
+  width: 18px;
+  height: 28px;
+  background: #f6df58;
+  border: 3px solid #28558a;
+  position: absolute;
+  bottom: 6px;
+  right: 34px;
+  border-radius: 4px;
+}
+
+.turntable-badge {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: #f6df58;
+  color: #28558a;
+  border: 2.5px solid #28558a;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-family: var(--font-syne), sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
+.turntable-light {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  width: 14px;
+  height: 14px;
+  background: #e2e8f0;
+  border: 2.5px solid #28558a;
+  border-radius: 50%;
+}
+
+.turntable-light.on {
+  background: #f6df58;
+}
+
+/* --- CHARACTER INFO BOX --- */
+.character-info-box {
+  width: min(100%, 440px);
+  background: #ffffff;
+  border: 2.5px solid #28558a;
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+}
+
+.info-photo-frame {
+  width: 100%;
+  height: auto;
+  background: #f6df58;
+  border: 2px solid #28558a;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  min-height: 220px;
+  aspect-ratio: 1.35 / 1;
+}
+.info-photo-frame img { width:100%; height:100%; object-fit:cover; position:absolute; inset:0; }
+
+.info-photo-placeholder {
+  width: 100%;
+  height: 100%;
+  background: #28558a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f6df58;
+  font-family: var(--font-syne), sans-serif;
+  font-size: 52px;
+  font-weight: 800;
+}
+
+.info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.info-name {
+  font-family: var(--font-syne), sans-serif;
+  font-size: 30px;
+  font-weight: 800;
+  color: #28558a;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.info-role-badge {
+  background: #f6df58;
+  color: #28558a;
+  border: 2.5px solid #28558a;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.character-vibe { display:flex; flex-direction:column; gap:5px; padding:12px 14px; border-left:3px solid #f6df58; background:#fff8d7; }
+.character-vibe span { font:800 8px var(--font-syne),sans-serif; letter-spacing:.14em; opacity:.62; }
+.character-vibe strong { font:800 13px var(--font-syne),sans-serif; }
+
+.info-description {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #28558a;
+  background: #f8fafc;
+  border: 2.5px solid #28558a;
+  padding: 16px;
+  border-radius: 18px;
+  font-weight: 500;
+}
+
+.eject-btn {
+  background: #f6df58;
+  color: #28558a;
+  border: 2.5px solid #28558a;
+  border-radius: 30px;
+  padding: 14px 24px;
+  font-family: var(--font-syne), sans-serif;
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.eject-btn:hover {
+  background: #ffe769;
+  transform: translate(-2px, -2px);
+}
+
+.eject-btn:active {
+  transform: translate(1px, 1px);
+}
+
+/* --- HORIZONTAL VINYL TRACK --- */
+.vinyl-track-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.track-label {
+  font-family: var(--font-syne), sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  color: #28558a;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: transparent !important;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+.vinyl-track {
+  width: 100%;
+  display: flex;
+  gap: 28px;
+  overflow-x: auto;
+  padding: 20px 16px 28px;
+  scroll-snap-type: x mandatory;
+  justify-content: center;
+}
+
+.track-vinyl-item {
+  scroll-snap-align: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.track-vinyl-item:hover {
+  transform: translateY(-2px);
+}
+.track-vinyl-item:focus-visible { outline:2px solid #28558a; outline-offset:5px; border-radius:12px; }
+
+.track-vinyl-disc {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: repeating-radial-gradient(circle, #28558a 0 4px, #32669e 5px 6px, #28558a 7px 10px);
+  border: 3px solid #28558a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.track-vinyl-item:hover .track-vinyl-disc {
+}
+
+.track-vinyl-label {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #f6df58;
+  border: 2px solid #28558a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: #28558a;
+}
+
+.track-vinyl-item.active .track-vinyl-disc {
+  border-color: #f6df58;
+  border-width: 4px;
+  box-shadow: 0 5px 14px rgba(40,85,138,.16);
+}
+.track-vinyl-item.active .track-vinyl-name { color:#8b7410; }
+
+.track-vinyl-name {
+  font-family: var(--font-syne), sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  color: #28558a;
+  background: transparent !important;
+  padding: 4px 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  outline: none !important;
+}
+.track-vinyl-role { margin-top:-10px; color:rgba(40,85,138,.58); font:800 7px var(--font-syne),sans-serif; letter-spacing:.1em; }
+
+@media (max-width:900px) {
+  .vinyl-stage { grid-template-columns:minmax(0, 520px); min-height:0; gap:24px; }
+  .character-info-box { width:min(100%,520px); }
+  .turntable-card { width:min(440px,88vw); height:min(440px,88vw); }
+  .turntable-platter { width:82%; height:auto; aspect-ratio:1; }
+  .vinyl-disc { width:94%; height:auto; aspect-ratio:1; }
+}
+@media (max-width:600px) {
+  .commission-process { padding:22px 16px; }
+  .commission-process-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+  .commission-process-step { min-height:142px; padding:14px 12px; }
+  .commission-process-step h4 { font-size:12px; }
+  .commission-process-step p { font-size:10px; }
+  .characters-heading { align-items:flex-start; flex-direction:column; gap:18px; margin-bottom:22px; }
+  .characters-heading-copy { width:100%; }
+  .characters-intro { font-size:12px; }
+  .crackle-toggle { align-self:flex-start; }
+  .vinyl-track { justify-content:flex-start; gap:20px; }
+  .track-vinyl-disc { width:96px; height:96px; }
+  .info-header { align-items:flex-start; flex-direction:column; gap:8px; }
+}
+\n.track-vinyl-name {
+  font-family: var(--font-syne), sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  color: #28558a;
+  background: transparent !important;
+  padding: 4px 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  outline: none !important;
+}

@@ -1,0 +1,19 @@
+---
+name: portfolio-ui-management
+description: "Use when managing portfolio UI layout and commission pages."
+---
+
+# Portfolio Art UI Best Practices
+
+## Cell-Shaded & Flat Design Guidelines
+- **Zero Drop Shadows for Clean Comic Look**: Avoid complex AI-like drop-shadows, gradients, or smooth blurs on cards, turntables, or queue boards. Use solid pixel borders (e.g., `3px solid #10233b`) and flat colors for a clean hand-drawn comic aesthetic.
+- **Dedicated Page Routing for Features**: Move major sections like commission tiers, FAQs, terms, and live waitlists into their own dedicated pages (e.g., `/commissions`) accessible via the main navigation bar, keeping landing pages focused and uncluttered.
+- **VGen-Style Kanban Boards**: Implement queue tracking with columns for `In Queue`, `Sketching`, `In Progress`, and `Completed` with intuitive drag-and-drop or status cycling.
+
+## Navigation and Floating UI Consistency
+- **Avoid Redundant Trigger Points**: When a feature (like the 'About Me' modal) is already reachable via the main `NavBar`, avoid hardcoding it as a secondary button elsewhere on the page.
+- **State Management**: Centralize global UI state and avoid duplicating component imports or state hooks across files.
+
+## Pitfalls
+- **AI-Like Artifacts**: Adding gradients and box shadows breaks the hand-drawn cell-shaded aesthetic preferred for comic and illustration portfolios. Stick to crisp solid borders and flat tones.
+- **Cluttered Landing Pages**: Putting commissions, extensive queues, FAQs, and pricing all on the homepage overwhelms visitors; use dedicated subpages linked from the navbar.
