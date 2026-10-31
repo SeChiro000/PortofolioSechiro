@@ -17,6 +17,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      GITHUB_PAGES: 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -24,13 +26,7 @@ jobs:
           node-version: 20
           cache: 'npm'
       - run: npm ci --legacy-peer-deps
-      - run: 
-      - name: Build and Copy Assets
-        run: |
-          mkdir -p out/_next/static
-          cp -r .next/static/css out/_next/static/
-          cp -r .next/static/chunks out/_next/static/
-        
+      - run: npm run build
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
