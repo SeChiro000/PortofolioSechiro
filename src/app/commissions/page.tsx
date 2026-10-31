@@ -53,6 +53,7 @@ export default function CommissionsPage() {
   const inquiryRef = useRef<HTMLDivElement>(null)
   const [commissionStatus, setCommissionStatus] = useState('COMMISSIONS ARE OPEN')
   const [currentTiers, setCurrentTiers] = useState<CommissionTier[]>(tiers)
+  const [queueList, setQueueList] = useState<any[]>([])
 
   useEffect(() => {
     const savedStatus = localStorage.getItem('sechiro_commission_status')
@@ -67,6 +68,11 @@ export default function CommissionsPage() {
       try { setCurrentTiers(JSON.parse(savedTiers)) } catch {}
     }
 
+    const savedQueue = localStorage.getItem('sechiro_commission_queue')
+    if (savedQueue) {
+      try { setQueueList(JSON.parse(savedQueue)) } catch {}
+    }
+
     fetch('/api/site-settings', { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
@@ -79,6 +85,9 @@ export default function CommissionsPage() {
           }
           if (data.commissionTiers && Array.isArray(data.commissionTiers)) {
             setCurrentTiers(data.commissionTiers)
+          }
+          if (data.commissionQueue && Array.isArray(data.commissionQueue)) {
+            setQueueList(data.commissionQueue)
           }
         }
       })
@@ -157,6 +166,55 @@ export default function CommissionsPage() {
             ))}
           </div>
         </section>
+
+        {/* Live Commission Tracker */}
+        <div style={{ background: '#ffffff', border: '3px solid #28558a', borderRadius: '20px', padding: 'clamp(20px, 4vw, 36px)', marginBottom: '40px' }}>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 pb-4 border-b-2 border-[#28558a]">
+            <div>
+              <span className="px-3 py-1 bg-yellow-200 text-slate-900 font-extrabold text-xs border border-[#28558a] rounded-md inline-block mb-1">
+                LIVE COMMISSION TRACKER
+              </span>
+              <h3 className="text-2xl font-black text-slate-900 tracking-tight">Workflow & Client Queue</h3>
+            </div>
+            <p className="text-sm font-bold text-slate-700 bg-slate-50 px-4 py-2 rounded-xl border border-slate-300">
+              Total Orders: <span className="text-blue-600 font-black">{queueList.length}</span>
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {[
+              { id: 'In Queue', label: 'In Queue', color: 'bg-yellow-50 border-[#28558a]' },
+              { id: 'Sketching', label: 'Sketching', color: 'bg-purple-50 border-[#28558a]' },
+              { id: 'In Progress', label: 'WIP (In Progress)', color: 'bg-blue-50 border-[#28558a]' },
+              { id: 'Completed', label: 'Completed', color: 'bg-green-50 border-[#28558a]' },
+            ].map(col => {
+              const colItems = queueList.filter((i: any) => i.status === col.id)
+              return (
+                <div key={col.id} className={`p-4 rounded-xl border-2 border-[#28558a] flex flex-col gap-3 ${col.color}`}>
+                  <div className="flex justify-between items-center pb-2 border-b border-slate-300">
+                    <h4 className="font-extrabold text-xs text-slate-900">{col.label}</h4>
+                    <span className="w-5 h-5 bg-white border border-[#28558a] rounded-full font-black text-[11px] flex items-center justify-center">
+                      {colItems.length}
+                    </span>
+                  </div>
+
+                  <div className="space-y-2">
+                    {colItems.length === 0 ? (
+                      <p className="text-xs text-slate-400 italic text-center py-4">Kosong</p>
+                    ) : (
+                      colItems.map((item: any, iIdx: number) => (
+                        <div key={iIdx} className="bg-white p-3 rounded-xl border border-[#28558a] flex flex-col gap-1">
+                          <span className="font-extrabold text-sm text-slate-900">{item.clientName}</span>
+                          <span className="text-xs text-slate-600">{item.artType}</span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
 
         {/* Tiers Grid & Inquiry Builder Box (Placed together at the bottom) */}
         <div style={{ marginBottom: '24px' }}>
