@@ -2,14 +2,34 @@ import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypt
 import { NextResponse } from 'next/server'
 import { getPortfolioEnv } from '../../../lib/cloudflare'
 import { hasAdminSession } from '../../../lib/portfolio-admin'
+import fs from 'node:fs'
+import path from 'node:path'
 
 export const dynamic = 'force-dynamic'
 
 const DEVICE_COOKIE = 'sechiro_guestbook_device'
 const DEVICE_COOKIE_AGE = 60 * 60 * 24 * 365
 const MAX_ENTRIES = 100
+const GUESTBOOK_FILE = path.join(process.cwd(), 'src', 'data', 'guestbook.json')
 
 type GuestbookEntry = { id: string; name: string; message: string; date: string }
+
+function readLocalGuestbook(): GuestbookEntry[] {
+  try {
+    if (fs.existsSync(GUESTBOOK_FILE)) {
+      return JSON.parse(fs.readFileSync(GUESTBOOK_FILE, 'utf8'))
+    }
+  } catch {}
+  return []
+}
+
+function writeLocalGuestbook(entries: GuestbookEntry[]) {
+  try {
+    const dir = path.dirname(GUESTBOOK_FILE)
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+    fs.writeFileSync(GUESTBOOK_FILE, JSON.stringify(entries, null, 2), 'utf8')
+  } catch {}
+}
 
 function signDeviceId(id: string, guestbookSecret: string | undefined, adminPassword: string | undefined) {
   const secret = guestbookSecret || adminPassword
@@ -40,11 +60,16 @@ function jsonError(message: string, status: number) {
 }
 
 async function readEntries() {
-  const { DB } = await getPortfolioEnv()
-  const result = (await DB.prepare('SELECT id, name, message, post_date AS date FROM guestbook_entries ORDER BY created_at DESC LIMIT ?')
-    .bind(MAX_ENTRIES)
-    .all()) as { results: GuestbookEntry[] }
-  return result.results
+  try {
+    const { DB } = await getPortfolioEnv()
+    const result = (await DB.prepare('SELECT id, name, message, post_date AS date FROM guestbook_entries ORDER BY created_at DESC LIMIT ?')
+      .bind(MAX_ENTRIES)
+      .all()) as { results: GuestbookEntry[] }
+    if (result && Array.isArray(result.results) && result.results.length > 0) {
+      return result.results
+    }
+  } catch {}
+  return readLocalGuestbook()
 }
 
 export async function GET(request: Request) {
@@ -72,7 +97,8 @@ export async function GET(request: Request) {
     }
     return response
   } catch {
-    return jsonError('Buku tamu belum terhubung ke database Cloudflare. Coba lagi nanti.', 503)
+    const entries = readLocalGuestbook()
+    return NextResponse.json({ entries, hasPostedToday: false }, { headers: { 'Cache-Control': 'no-store' } })
   }
 }
 
@@ -95,13 +121,14 @@ export async function POST(request: Request) {
   const message = typeof payload.message === 'string' ? payload.message.trim() : ''
   if (!name || name.length > 30 || !message || message.length > 180) return jsonError('Nama maksimal 30 karakter dan pesan maksimal 180 karakter.', 400)
 
+  const today = todayUtc()
+  const entry: GuestbookEntry = { id: randomBytes(12).toString('hex'), name, message, date: today }
+
   try {
     const { DB, GUESTBOOK_DEVICE_SECRET, PORTFOLIO_ADMIN_PASSWORD } = await getPortfolioEnv()
     const deviceId = getDeviceId(request, GUESTBOOK_DEVICE_SECRET, PORTFOLIO_ADMIN_PASSWORD)
     if (!deviceId) return jsonError('Tidak dapat mengenali perangkat. Muat ulang halaman lalu coba lagi.', 400)
-    const today = todayUtc()
     const deviceHash = createHash('sha256').update(deviceId).digest('hex')
-    const entry: GuestbookEntry = { id: randomBytes(12).toString('hex'), name, message, date: today }
     const results = await DB.batch([
       DB.prepare('INSERT INTO guestbook_daily_limits (device_hash, post_date) VALUES (?, ?) ON CONFLICT(device_hash, post_date) DO NOTHING')
         .bind(deviceHash, today),
@@ -115,7 +142,10 @@ export async function POST(request: Request) {
     if (results[1].meta.changes !== 1) return jsonError('Pesan gagal disimpan. Coba lagi nanti.', 503)
     return NextResponse.json({ entry, hasPostedToday: true }, { status: 201, headers: { 'Cache-Control': 'no-store' } })
   } catch {
-    return jsonError('Pesan belum terkirim karena database Cloudflare sedang tidak tersedia. Coba lagi nanti.', 503)
+    const local = readLocalGuestbook()
+    local.unshift(entry)
+    writeLocalGuestbook(local.slice(0, MAX_ENTRIES))
+    return NextResponse.json({ entry, hasPostedToday: true }, { status: 201, headers: { 'Cache-Control': 'no-store' } })
   }
 }
 
