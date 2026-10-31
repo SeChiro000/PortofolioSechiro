@@ -59,6 +59,7 @@ export default function CharactersPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
     >
+      <div className="paper-overlay" />
       <audio ref={musicRef} src="/gallery/monarch-of-the-street.ogg" loop preload="none" />
       <header className="studio-header">
         <div className="studio-brand">SeChiro<span>STUDIO</span></div>

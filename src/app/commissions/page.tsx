@@ -145,6 +145,7 @@ export default function CommissionsPage() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
     >
+      <div className="paper-overlay" />
       <header className="studio-header">
         <div className="studio-brand">SeChiro<span>STUDIO</span></div>
         <Link href="/" className="studio-back-link">← BACK TO HOME</Link>

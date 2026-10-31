@@ -113,6 +113,7 @@ export default function StudioPage() {
 
   return (
     <main className="studio-page">
+      <div className="paper-overlay" />
       <header className="studio-header">
         <a href="/" className="studio-brand">SeChiro<span>✳</span></a>
         <a href="/" className="studio-back-link">VIEW PORTFOLIO ↗</a>
