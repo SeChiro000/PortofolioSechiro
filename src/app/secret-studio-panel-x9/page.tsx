@@ -460,13 +460,37 @@ export default function AdminDashboard() {
             ) : (
               queueItems.map((item, idx) => (
                 <div key={idx} className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-extrabold text-[#28558a]">{item.clientName} <span className="ml-2 font-normal text-xs text-slate-600">({item.artType})</span></p>
+                  <div className="min-w-0 flex-1 grid sm:grid-cols-2 gap-2">
+                    <input
+                      aria-label={`Client name for item ${idx + 1}`}
+                      value={item.clientName}
+                      onChange={(e) => {
+                        const updated = [...queueItems]
+                        updated[idx].clientName = e.target.value
+                        setQueueItems(updated)
+                      }}
+                      className="rounded-lg border border-slate-300 p-2 font-bold text-sm bg-white text-[#28558a]"
+                    />
+                    <input
+                      aria-label={`Art type for item ${idx + 1}`}
+                      value={item.artType}
+                      onChange={(e) => {
+                        const updated = [...queueItems]
+                        updated[idx].artType = e.target.value
+                        setQueueItems(updated)
+                      }}
+                      className="rounded-lg border border-slate-300 p-2 text-xs bg-white text-slate-700"
+                    />
                   </div>
                   <div className="flex items-center gap-3">
                     <select
+                      aria-label={`Status for item ${idx + 1}`}
                       value={item.status}
-                      onChange={(e) => updateQueueItemStatus(idx, e.target.value as any)}
+                      onChange={(e) => {
+                        const updated = [...queueItems]
+                        updated[idx].status = e.target.value as any
+                        setQueueItems(updated)
+                      }}
                       className="rounded-lg border border-slate-300 p-2 font-bold text-xs bg-white text-[#28558a]"
                     >
                       <option value="In Queue">🟡 In Queue</option>
@@ -479,6 +503,16 @@ export default function AdminDashboard() {
                 </div>
               ))
             )}
+          </div>
+          <div className="mt-5">
+            <button
+              type="button"
+              onClick={() => saveQueueToBackend(queueItems)}
+              disabled={working}
+              className="w-full min-h-12 rounded-lg border-2 border-[#28558a] bg-[#28558a] px-5 font-bold text-white disabled:opacity-60 shadow-md"
+            >
+              {working ? 'SAVING…' : '💾 SAVE COMMISSION QUEUE'}
+            </button>
           </div>
         </section>
 
