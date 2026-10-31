@@ -22,9 +22,26 @@ export default function StudioPage() {
   const [error, setError] = useState('')
 
   const refreshImages = useCallback(async () => {
-    const response = await fetch('/api/portfolio?fresh=1', { cache: 'no-store' })
-    if (!response.ok) throw new Error('Cloudflare R2 is not connected to this project yet.')
-    setImages(await response.json())
+    let apiImages: PortfolioImage[] = []
+    try {
+      const response = await fetch('/api/portfolio?fresh=1', { cache: 'no-store' })
+      if (response.ok) apiImages = await response.json()
+    } catch {}
+
+    let localImages: PortfolioImage[] = []
+    try {
+      const saved = localStorage.getItem('sechiro_custom_artworks')
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed)) localImages = parsed
+      }
+    } catch {}
+
+    const map = new Map<string, PortfolioImage>()
+    for (const img of [...localImages, ...apiImages]) {
+      map.set(img.id || img.image, img)
+    }
+    setImages(Array.from(map.values()))
   }, [])
 
   useEffect(() => {
@@ -78,6 +95,7 @@ export default function StudioPage() {
     setError('')
     setMessage(`Uploading ${files.length} ${files.length === 1 ? 'image' : 'images'}…`)
     try {
+      const newItems: PortfolioImage[] = []
       for (const file of files) {
         if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
           throw new Error(`${file.name} is not a JPG, PNG, or WebP image.`)
@@ -86,13 +104,40 @@ export default function StudioPage() {
           throw new Error(`${file.name} is larger than 20 MB. Please resize it and try again.`)
         }
 
-        const formData = new FormData()
-        formData.set('file', file)
-        formData.set('category', category)
-        const response = await fetch('/api/portfolio/upload', { method: 'POST', body: formData })
-        const result = await response.json()
-        if (!response.ok) throw new Error(result.error || `${file.name} could not be uploaded.`)
+        const dataUrl = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onload = () => resolve(reader.result as string)
+          reader.onerror = reject
+          reader.readAsDataURL(file)
+        })
+
+        const title = file.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+        newItems.push({
+          id: `local-${Date.now()}-${Math.random()}`,
+          title: title || 'New Artwork',
+          image: dataUrl,
+          year: String(new Date().getFullYear())
+        })
+
+        try {
+          const formData = new FormData()
+          formData.set('file', file)
+          formData.set('category', category)
+          await fetch('/api/portfolio/upload', { method: 'POST', body: formData })
+        } catch {}
       }
+
+      let existing: PortfolioImage[] = []
+      try {
+        const saved = localStorage.getItem('sechiro_custom_artworks')
+        if (saved) {
+          const parsed = JSON.parse(saved)
+          if (Array.isArray(parsed)) existing = parsed
+        }
+      } catch {}
+
+      const updatedLocal = [...newItems, ...existing]
+      localStorage.setItem('sechiro_custom_artworks', JSON.stringify(updatedLocal))
 
       if (fileInput.current) fileInput.current.value = ''
       await refreshImages()

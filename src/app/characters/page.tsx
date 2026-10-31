@@ -15,10 +15,19 @@ export default function CharactersPage() {
   const musicRef = useRef<HTMLAudioElement>(null)
 
   useEffect(() => {
+    const local = localStorage.getItem('sechiro_characters_data')
+    if (local) {
+      try {
+        const parsed = JSON.parse(local)
+        if (Array.isArray(parsed)) {
+          setCharacters(parsed)
+        }
+      } catch {}
+    }
     fetch('/api/site-settings')
       .then(res => res.json())
       .then(data => {
-        if (data.characters && Array.isArray(data.characters) && data.characters.length > 0) {
+        if (!local && data.characters && Array.isArray(data.characters)) {
           setCharacters(data.characters)
         }
       })

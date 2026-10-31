@@ -31,11 +31,19 @@ export default function AdminDashboard() {
 
   const [about, setAbout] = useState<AboutSettings>(defaultAbout)
   const [entries, setEntries] = useState<GuestbookEntry[]>([])
-  const [characters, setCharacters] = useState<CharacterItem[]>([
-    { id: 1, name: 'Iroha', role: 'ILLUSTRATION', mood: 'Soft & Whimsical', description: 'A playful illustration study focusing on soft forms.', initials: 'IR', image: '/gallery/ProfilePIcture.jpg' },
-    { id: 2, name: 'Karasu', role: '2D CHARACTER', mood: 'Sharp & Celestial', description: 'A character concept with sharp lines and a celestial mood.', initials: 'KR', image: '/gallery/aboutme.png' },
-    { id: 3, name: 'Momo', role: 'CHIBI', mood: 'Cute & Vibrant', description: 'A chibi study with cute proportions and a bright personality.', initials: 'MM', image: '/gallery/aboutme.png' }
-  ])
+  const [characters, setCharacters] = useState<CharacterItem[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('sechiro_characters_data')
+      if (saved) {
+        try { const parsed = JSON.parse(saved); if (Array.isArray(parsed)) return parsed } catch {}
+      }
+    }
+    return [
+      { id: 1, name: 'Iroha', role: 'ILLUSTRATION', mood: 'Soft & Whimsical', description: 'A playful illustration study focusing on soft forms.', initials: 'IR', image: '/gallery/ProfilePIcture.jpg' },
+      { id: 2, name: 'Karasu', role: '2D CHARACTER', mood: 'Sharp & Celestial', description: 'A character concept with sharp lines and a celestial mood.', initials: 'KR', image: '/gallery/aboutme.png' },
+      { id: 3, name: 'Momo', role: 'CHIBI', mood: 'Cute & Vibrant', description: 'A chibi study with cute proportions and a bright personality.', initials: 'MM', image: '/gallery/aboutme.png' }
+    ]
+  })
   const [newCharName, setNewCharName] = useState('')
   const [newCharRole, setNewCharRole] = useState('')
   const [newCharMood, setNewCharMood] = useState('')
@@ -59,7 +67,8 @@ export default function AdminDashboard() {
         try { setAbout({ ...defaultAbout, ...JSON.parse(savedLocally) }) } catch { setAbout({ ...defaultAbout }) }
       }
     }
-    if (settings.saved && settings.characters && Array.isArray(settings.characters)) {
+    const localChars = localStorage.getItem('sechiro_characters_data')
+    if (!localChars && settings.saved && settings.characters && Array.isArray(settings.characters)) {
       setCharacters(settings.characters)
     }
     setEntries(guestbook.entries)
@@ -70,6 +79,7 @@ export default function AdminDashboard() {
     setError('')
     setNotice('')
     try {
+      localStorage.setItem('sechiro_characters_data', JSON.stringify(updatedChars))
       const response = await fetch('/api/site-settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
