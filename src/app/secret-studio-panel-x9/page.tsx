@@ -92,7 +92,20 @@ export default function AdminDashboard() {
       if (settings.about) setAbout({ ...defaultAbout, ...settings.about })
       if (settings.commissionStatus) setCommissionStatus(settings.commissionStatus)
       if (settings.commissionTiers) setCommissionTiers(settings.commissionTiers)
-      if (settings.commissionQueue && Array.isArray(settings.commissionQueue)) setQueueItems(settings.commissionQueue)
+      if (settings.commissionQueue && Array.isArray(settings.commissionQueue)) {
+        if (settings.commissionQueue.length > 0) {
+          setQueueItems(settings.commissionQueue)
+          localStorage.setItem('sechiro_commission_queue', JSON.stringify(settings.commissionQueue))
+        } else {
+          const savedLoc = localStorage.getItem('sechiro_commission_queue')
+          if (savedLoc) {
+            try {
+              const parsed = JSON.parse(savedLoc)
+              if (Array.isArray(parsed) && parsed.length > 0) setQueueItems(parsed)
+            } catch {}
+          }
+        }
+      }
     } else {
       const savedLocally = localStorage.getItem('sechiro_about_data')
       if (savedLocally) {

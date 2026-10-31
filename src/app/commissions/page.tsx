@@ -88,8 +88,18 @@ export default function CommissionsPage() {
             localStorage.setItem('sechiro_commission_tiers', JSON.stringify(data.commissionTiers))
           }
           if (data.commissionQueue && Array.isArray(data.commissionQueue)) {
-            setQueueList(data.commissionQueue)
-            localStorage.setItem('sechiro_commission_queue', JSON.stringify(data.commissionQueue))
+            if (data.commissionQueue.length > 0) {
+              setQueueList(data.commissionQueue)
+              localStorage.setItem('sechiro_commission_queue', JSON.stringify(data.commissionQueue))
+            } else {
+              const savedLoc = localStorage.getItem('sechiro_commission_queue')
+              if (savedLoc) {
+                try {
+                  const parsed = JSON.parse(savedLoc)
+                  if (Array.isArray(parsed) && parsed.length > 0) setQueueList(parsed)
+                } catch {}
+              }
+            }
           }
         }
       })
