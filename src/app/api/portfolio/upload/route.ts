@@ -1,5 +1,7 @@
 import { randomBytes } from 'node:crypto'
 import { NextResponse } from 'next/server'
+import { mkdir, writeFile } from 'node:fs/promises'
+import path from 'node:path'
 import { getPortfolioEnv } from '../../../../lib/cloudflare'
 import { hasAdminSession } from '../../../../lib/portfolio-admin'
 
@@ -40,10 +42,24 @@ export async function POST(request: Request) {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '') || 'artwork'
-    const pathname = `portfolio/${category}/${Date.now()}-${randomBytes(4).toString('hex')}-${slug}.${extension}`
-    await PORTFOLIO_BUCKET.put(pathname, file.stream(), { httpMetadata: { contentType: file.type } })
+    const filename = `${Date.now()}-${randomBytes(4).toString('hex')}-${slug}.${extension}`
+    const pathname = `portfolio/${category}/${filename}`
+
+    try {
+      const uploadDir = path.join(process.cwd(), 'public', 'gallery', 'uploads', category)
+      await mkdir(uploadDir, { recursive: true })
+      const buffer = Buffer.from(await file.arrayBuffer())
+      await writeFile(path.join(uploadDir, filename), buffer)
+    } catch (err) {
+      console.error('Failed to save local upload:', err)
+    }
+
+    try {
+      await PORTFOLIO_BUCKET.put(pathname, file.stream(), { httpMetadata: { contentType: file.type } })
+    } catch {}
+
     return NextResponse.json({ success: true, pathname }, { status: 201 })
   } catch {
-    return NextResponse.json({ error: 'The image could not be saved to Cloudflare R2.' }, { status: 503 })
+    return NextResponse.json({ error: 'The image could not be saved.' }, { status: 503 })
   }
 }

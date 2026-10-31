@@ -136,7 +136,7 @@ export async function GET() {
     if (local.commissionTiers && local.commissionTiers.length) {
       commissionTiers = local.commissionTiers
     }
-    if (local.characters && local.characters.length) {
+    if (local.characters !== undefined && Array.isArray(local.characters)) {
       characters = local.characters
     }
 
@@ -148,7 +148,7 @@ export async function GET() {
       commissionStatus: local.commissionStatus || 'OPEN',
       commissionTiers: local.commissionTiers || DEFAULT_TIERS,
       commissionQueue: local.commissionQueue || [],
-      characters: local.characters || DEFAULT_CHARACTERS,
+      characters: local.characters !== undefined ? local.characters : DEFAULT_CHARACTERS,
       saved: false
     }, { headers: { 'Cache-Control': 'no-store' } })
   }
