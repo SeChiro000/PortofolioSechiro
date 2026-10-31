@@ -192,7 +192,15 @@ export default function AdminDashboard() {
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || 'Pengaturan gagal disimpan.')
-      setAbout(data.about)
+      localStorage.setItem('sechiro_about_data', JSON.stringify(about))
+      if (data.about) {
+        setAbout({
+          eyebrow: data.about.eyebrow || about.eyebrow,
+          name: data.about.name || about.name,
+          description: data.about.description || about.description,
+          image: data.about.image || about.image,
+        })
+      }
       setNotice('Perubahan About Me tersimpan untuk semua pengunjung.')
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Pengaturan gagal disimpan.')

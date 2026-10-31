@@ -244,7 +244,7 @@ export async function PUT(request: Request) {
 
     writeLocalSettings(local)
 
-    return NextResponse.json({ ok: true }, { headers: { 'Cache-Control': 'no-store' } })
+    return NextResponse.json({ ok: true, about: local.about }, { headers: { 'Cache-Control': 'no-store' } })
   } catch {
     return error('Perubahan gagal disimpan.', 503)
   }
