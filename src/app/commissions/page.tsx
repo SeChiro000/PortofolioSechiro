@@ -52,20 +52,43 @@ export default function CommissionsPage() {
   const [copyError, setCopyError] = useState('')
   const inquiryRef = useRef<HTMLDivElement>(null)
   const [commissionStatus, setCommissionStatus] = useState('COMMISSIONS ARE OPEN')
+  const [currentTiers, setCurrentTiers] = useState<CommissionTier[]>(tiers)
 
   useEffect(() => {
-    const saved = localStorage.getItem('sechiro_commission_status')
-    if (saved) {
-      if (saved === 'OPEN') setCommissionStatus('COMMISSIONS ARE OPEN')
-      else if (saved === 'WAITLIST') setCommissionStatus('COMMISSION WAITLIST ACTIVE')
-      else if (saved === 'CLOSED') setCommissionStatus('COMMISSIONS CURRENTLY CLOSED')
+    const savedStatus = localStorage.getItem('sechiro_commission_status')
+    if (savedStatus) {
+      if (savedStatus === 'OPEN') setCommissionStatus('COMMISSIONS ARE OPEN')
+      else if (savedStatus === 'WAITLIST') setCommissionStatus('COMMISSION WAITLIST ACTIVE')
+      else if (savedStatus === 'CLOSED') setCommissionStatus('COMMISSIONS CURRENTLY CLOSED')
     }
+
+    const savedTiers = localStorage.getItem('sechiro_commission_tiers')
+    if (savedTiers) {
+      try { setCurrentTiers(JSON.parse(savedTiers)) } catch {}
+    }
+
+    fetch('/api/site-settings', { cache: 'no-store' })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.saved) {
+          if (data.commissionStatus) {
+            const st = data.commissionStatus
+            if (st === 'OPEN') setCommissionStatus('COMMISSIONS ARE OPEN')
+            else if (st === 'WAITLIST') setCommissionStatus('COMMISSION WAITLIST ACTIVE')
+            else if (st === 'CLOSED') setCommissionStatus('COMMISSIONS CURRENTLY CLOSED')
+          }
+          if (data.commissionTiers && Array.isArray(data.commissionTiers)) {
+            setCurrentTiers(data.commissionTiers)
+          }
+        }
+      })
+      .catch(() => {})
   }, [])
 
 
 
 
-  const activeTierObj = tiers.find((t) => t.id === selectedTier) || tiers[0]
+  const activeTierObj = currentTiers.find((t) => t.id === selectedTier) || currentTiers[0]
 
   const getInquiryText = () => {
     return `Hi SeChiro! I would like to commission a ${activeTierObj.title}.${customIdea ? ` Idea note: ${customIdea}` : ''}`
@@ -142,7 +165,7 @@ export default function CommissionsPage() {
           </h3>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '24px', marginBottom: '32px' }}>
-            {tiers.map((tier, idx) => {
+            {currentTiers.map((tier, idx) => {
               const isSelected = selectedTier === tier.id
               return (
                 <motion.article

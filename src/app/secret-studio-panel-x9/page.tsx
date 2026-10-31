@@ -5,6 +5,7 @@ import Link from 'next/link'
 
 type AboutSettings = { eyebrow: string; name: string; description: string; image: string }
 type GuestbookEntry = { id: string; name: string; message: string; date: string }
+type CommissionTier = { id: string; title: string; tag: string; price: string; timeframe: string; description: string; icon: string }
 
 const defaultAbout: AboutSettings = {
   eyebrow: 'THE ARTIST BEHIND THE DOODLES',
@@ -12,6 +13,36 @@ const defaultAbout: AboutSettings = {
   description: 'I make expressive character art, playful illustrations, and drawings with a life of their own.',
   image: '/gallery/aboutme.png',
 }
+
+const defaultTiers: CommissionTier[] = [
+  {
+    id: 'character',
+    title: 'CHARACTER ART',
+    tag: 'CHARACTER FOCUS',
+    price: 'Quote after brief',
+    timeframe: 'Timing agreed together',
+    description: 'Expressive hand-drawn character illustrations tailored to your vision.',
+    icon: '✦',
+  },
+  {
+    id: 'illustration',
+    title: 'CUSTOM ILLUSTRATION',
+    tag: 'MADE FOR YOUR IDEA',
+    price: 'Quote after brief',
+    timeframe: 'Timing agreed together',
+    description: 'A hand-drawn scene, object, or concept illustrated in a playful, colorful style.',
+    icon: '✿',
+  },
+  {
+    id: 'doodles',
+    title: 'DOODLE PACK & GRAPHICS',
+    tag: 'CREATIVE',
+    price: 'Quote after brief',
+    timeframe: 'Timing agreed together',
+    description: 'Custom playful doodle sets, icons, and visual assets for your brand.',
+    icon: '♪',
+  },
+]
 
 export default function AdminDashboard() {
   const [authenticated, setAuthenticated] = useState(false)
@@ -23,12 +54,18 @@ export default function AdminDashboard() {
   const [about, setAbout] = useState<AboutSettings>(defaultAbout)
   const [entries, setEntries] = useState<GuestbookEntry[]>([])
   const [commissionStatus, setCommissionStatus] = useState<'OPEN' | 'WAITLIST' | 'CLOSED'>('OPEN')
+  const [commissionTiers, setCommissionTiers] = useState<CommissionTier[]>(defaultTiers)
 
   const loadDashboard = useCallback(async () => {
     const savedComm = localStorage.getItem('sechiro_commission_status')
     if (savedComm === 'OPEN' || savedComm === 'WAITLIST' || savedComm === 'CLOSED') {
       setCommissionStatus(savedComm)
     }
+    const savedTiers = localStorage.getItem('sechiro_commission_tiers')
+    if (savedTiers) {
+      try { setCommissionTiers(JSON.parse(savedTiers)) } catch {}
+    }
+
     const [settingsResponse, guestbookResponse] = await Promise.all([
       fetch('/api/site-settings', { cache: 'no-store' }),
       fetch('/api/guestbook', { cache: 'no-store' }),
@@ -39,6 +76,8 @@ export default function AdminDashboard() {
     if (!guestbookResponse.ok) throw new Error(guestbook.error || 'Gagal memuat guestbook.')
     if (settings.saved) {
       if (settings.about) setAbout({ ...defaultAbout, ...settings.about })
+      if (settings.commissionStatus) setCommissionStatus(settings.commissionStatus)
+      if (settings.commissionTiers) setCommissionTiers(settings.commissionTiers)
     } else {
       const savedLocally = localStorage.getItem('sechiro_about_data')
       if (savedLocally) {
@@ -184,6 +223,29 @@ export default function AdminDashboard() {
     setTimeout(() => setNotice(''), 3000)
   }
 
+  const saveTiers = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setWorking(true)
+    setError('')
+    setNotice('')
+    try {
+      const response = await fetch('/api/site-settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ commissionTiers }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'Gagal menyimpan tier komisi.')
+      localStorage.setItem('sechiro_commission_tiers', JSON.stringify(commissionTiers))
+      setNotice('Tier komisi berhasil disimpan untuk semua pengunjung!')
+      setTimeout(() => setNotice(''), 3000)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Terjadi kesalahan.')
+    } finally {
+      setWorking(false)
+    }
+  }
+
   if (checking) return <main className="min-h-screen bg-[#fff8d7] p-6 grid place-items-center text-[#28558a]">Memeriksa akses studio…</main>
   if (!authenticated) return (
     <main className="min-h-screen bg-[#fff8d7] p-6 grid place-items-center font-sans text-[#28558a]">
@@ -259,6 +321,56 @@ export default function AdminDashboard() {
               </button>
             ))}
           </div>
+        </section>
+
+        <section className="rounded-xl border-2 border-[#28558a] bg-white p-5 md:p-7">
+          <h2 className="mb-3 text-xl font-extrabold text-[#28558a]">COMMISSION TIERS & PRICING</h2>
+          <p className="mb-5 text-sm text-slate-600">Ubah judul, harga, dan deskripsi card commission yang tampil di halaman /commissions.</p>
+          <form onSubmit={saveTiers} className="grid gap-6">
+            {commissionTiers.map((tier, idx) => (
+              <div key={tier.id} className="grid gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <p className="text-sm font-extrabold text-[#28558a]">Tier #{idx + 1} ({tier.id})</p>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <label className="grid gap-1 text-xs font-bold">Title
+                    <input value={tier.title} onChange={(e) => {
+                      const updated = [...commissionTiers]
+                      updated[idx].title = e.target.value
+                      setCommissionTiers(updated)
+                    }} className="rounded-lg border border-slate-300 p-2.5 font-normal text-sm" />
+                  </label>
+                  <label className="grid gap-1 text-xs font-bold">Tag
+                    <input value={tier.tag} onChange={(e) => {
+                      const updated = [...commissionTiers]
+                      updated[idx].tag = e.target.value
+                      setCommissionTiers(updated)
+                    }} className="rounded-lg border border-slate-300 p-2.5 font-normal text-sm" />
+                  </label>
+                  <label className="grid gap-1 text-xs font-bold">Price
+                    <input value={tier.price} onChange={(e) => {
+                      const updated = [...commissionTiers]
+                      updated[idx].price = e.target.value
+                      setCommissionTiers(updated)
+                    }} className="rounded-lg border border-slate-300 p-2.5 font-normal text-sm" />
+                  </label>
+                  <label className="grid gap-1 text-xs font-bold">Timeframe
+                    <input value={tier.timeframe} onChange={(e) => {
+                      const updated = [...commissionTiers]
+                      updated[idx].timeframe = e.target.value
+                      setCommissionTiers(updated)
+                    }} className="rounded-lg border border-slate-300 p-2.5 font-normal text-sm" />
+                  </label>
+                </div>
+                <label className="grid gap-1 text-xs font-bold">Description
+                  <textarea rows={2} value={tier.description} onChange={(e) => {
+                    const updated = [...commissionTiers]
+                    updated[idx].description = e.target.value
+                    setCommissionTiers(updated)
+                  }} className="rounded-lg border border-slate-300 p-2.5 font-normal text-sm" />
+                </label>
+              </div>
+            ))}
+            <button type="submit" disabled={working} className="min-h-12 rounded-lg border-2 border-[#28558a] bg-[#28558a] px-5 font-bold text-white disabled:opacity-60">{working ? 'SAVING…' : 'SAVE COMMISSION TIERS'}</button>
+          </form>
         </section>
 
         <section className="rounded-xl border-2 border-[#28558a] bg-white p-5 md:p-7">
