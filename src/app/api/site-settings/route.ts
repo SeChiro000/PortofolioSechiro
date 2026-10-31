@@ -136,7 +136,15 @@ export async function PUT(request: Request) {
     const { DB, PORTFOLIO_ADMIN_PASSWORD } = await getPortfolioEnv()
     if (!hasAdminSession(request, PORTFOLIO_ADMIN_PASSWORD)) return error('Akses admin diperlukan.', 401)
     const origin = request.headers.get('origin')
-    if (!origin || new URL(origin).origin !== new URL(request.url).origin) return error('Permintaan tidak valid.', 403)
+    if (origin) {
+      try {
+        const originHost = new URL(origin).host
+        const reqHost = request.headers.get('host')
+        if (reqHost && originHost !== reqHost) {
+          return error('Permintaan tidak valid.', 403)
+        }
+      } catch {}
+    }
 
     const payload = await request.json() as {
       about?: Partial<AboutSettings>

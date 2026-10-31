@@ -261,7 +261,20 @@ export default function AdminDashboard() {
     }
   }
 
-  const saveQueueToBackend = async (updatedQueue: QueueItem[]) => {
+  const saveQueueToBackend = async (itemsToSave?: QueueItem[]) => {
+    let finalQueue = itemsToSave ? [...itemsToSave] : [...queueItems]
+    if (newClientName.trim()) {
+      finalQueue.push({
+        clientName: newClientName.trim(),
+        artType: newArtType.trim() || 'Custom Art',
+        status: newStatus,
+      })
+      setNewClientName('')
+      setNewArtType('')
+    }
+    setQueueItems(finalQueue)
+    localStorage.setItem('sechiro_commission_queue', JSON.stringify(finalQueue))
+
     setWorking(true)
     setError('')
     setNotice('')
@@ -269,13 +282,11 @@ export default function AdminDashboard() {
       const response = await fetch('/api/site-settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ commissionQueue: updatedQueue }),
+        body: JSON.stringify({ commissionQueue: finalQueue }),
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || 'Gagal menyimpan queue.')
-      localStorage.setItem('sechiro_commission_queue', JSON.stringify(updatedQueue))
-      setQueueItems(updatedQueue)
-      setNotice('Commission queue berhasil diperbarui untuk semua pengunjung!')
+      setNotice('Commission queue berhasil disimpan untuk semua pengunjung!')
       setTimeout(() => setNotice(''), 3000)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Terjadi kesalahan.')
@@ -286,10 +297,7 @@ export default function AdminDashboard() {
 
   const addQueueItem = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!newClientName.trim()) return
-    const updated = [...queueItems, { clientName: newClientName.trim(), artType: newArtType.trim(), status: newStatus }]
-    setNewClientName('')
-    saveQueueToBackend(updated)
+    saveQueueToBackend()
   }
 
   const removeQueueItem = (index: number) => {
@@ -507,7 +515,7 @@ export default function AdminDashboard() {
           <div className="mt-5">
             <button
               type="button"
-              onClick={() => saveQueueToBackend(queueItems)}
+              onClick={() => saveQueueToBackend()}
               disabled={working}
               className="w-full min-h-12 rounded-lg border-2 border-[#28558a] bg-[#28558a] px-5 font-bold text-white disabled:opacity-60 shadow-md"
             >
