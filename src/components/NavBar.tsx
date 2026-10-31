@@ -16,10 +16,10 @@ export default function NavBar() {
       </Link>
       <span className="header-note">CHARACTER ART &amp; PLAYFUL WORLDS</span>
       <div className="header-actions">
-        <Link href="/commissions" className="nav-commission-btn">
-          <span>COMMISSION ME</span>
-          <span className="star">✳</span>
-        </Link>
+        <a href="https://discord.gg/GPbmCVhJW" target="_blank" rel="noopener noreferrer" className="nav-commission-btn">
+          <span>DISCORD CHAT</span>
+          <span className="star">💬</span>
+        </a>
         <motion.span className="nav-orbit" aria-hidden="true" style={{ rotate: sparkleRotation }}>✳</motion.span>
       </div>
     </header>

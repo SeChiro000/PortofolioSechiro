@@ -14,6 +14,7 @@ import CharacterFab from '../components/CharacterFab'
 import ProximityText from '../components/ProximityText'
 
 const socials = [
+  { name: 'DISCORD', handle: 'chat with me', icon: '💬', url: 'https://discord.gg/GPbmCVhJW' },
   { name: 'TIKTOK', handle: '@chirodisme', icon: '♪', url: 'https://www.tiktok.com/@chirodisme' },
   { name: 'X', handle: '@Kukurubarchive', icon: '𝕏', url: 'https://x.com/Kukurubarchive' },
 ]
