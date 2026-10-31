@@ -39,7 +39,7 @@ export async function getPortfolioEnv(): Promise<any> {
   return {
     DB: mockDb,
     PORTFOLIO_BUCKET: mockBucket,
-    PORTFOLIO_ADMIN_PASSWORD: process.env.PORTFOLIO_ADMIN_PASSWORD || 'admin',
-    GUESTBOOK_DEVICE_SECRET: process.env.GUESTBOOK_DEVICE_SECRET || 'secret',
+    PORTFOLIO_ADMIN_PASSWORD: process.env.PORTFOLIO_ADMIN_PASSWORD,
+    GUESTBOOK_DEVICE_SECRET: process.env.GUESTBOOK_DEVICE_SECRET,
   }
 }

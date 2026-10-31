@@ -59,27 +59,8 @@ export default function AdminDashboard() {
 
   const [about, setAbout] = useState<AboutSettings>(defaultAbout)
   const [entries, setEntries] = useState<GuestbookEntry[]>([])
-  const [commissionStatus, setCommissionStatus] = useState<'OPEN' | 'WAITLIST' | 'CLOSED'>('OPEN')
-  const [commissionTiers, setCommissionTiers] = useState<CommissionTier[]>(defaultTiers)
-  const [queueItems, setQueueItems] = useState<QueueItem[]>([])
-  const [newClientName, setNewClientName] = useState('')
-  const [newArtType, setNewArtType] = useState('Character Art')
-  const [newStatus, setNewStatus] = useState<'In Queue' | 'Sketching' | 'In Progress' | 'Completed'>('In Queue')
 
   const loadDashboard = useCallback(async () => {
-    const savedComm = localStorage.getItem('sechiro_commission_status')
-    if (savedComm === 'OPEN' || savedComm === 'WAITLIST' || savedComm === 'CLOSED') {
-      setCommissionStatus(savedComm)
-    }
-    const savedTiers = localStorage.getItem('sechiro_commission_tiers')
-    if (savedTiers) {
-      try { setCommissionTiers(JSON.parse(savedTiers)) } catch {}
-    }
-    const savedQueue = localStorage.getItem('sechiro_commission_queue')
-    if (savedQueue) {
-      try { setQueueItems(JSON.parse(savedQueue)) } catch {}
-    }
-
     const [settingsResponse, guestbookResponse] = await Promise.all([
       fetch('/api/site-settings', { cache: 'no-store' }),
       fetch('/api/guestbook', { cache: 'no-store' }),
@@ -88,24 +69,8 @@ export default function AdminDashboard() {
     const guestbook = await guestbookResponse.json()
     if (!settingsResponse.ok) throw new Error(settings.error || 'Gagal memuat pengaturan situs.')
     if (!guestbookResponse.ok) throw new Error(guestbook.error || 'Gagal memuat guestbook.')
-    if (settings.saved) {
-      if (settings.about) setAbout({ ...defaultAbout, ...settings.about })
-      if (settings.commissionStatus) setCommissionStatus(settings.commissionStatus)
-      if (settings.commissionTiers) setCommissionTiers(settings.commissionTiers)
-      if (settings.commissionQueue && Array.isArray(settings.commissionQueue)) {
-        if (settings.commissionQueue.length > 0) {
-          setQueueItems(settings.commissionQueue)
-          localStorage.setItem('sechiro_commission_queue', JSON.stringify(settings.commissionQueue))
-        } else {
-          const savedLoc = localStorage.getItem('sechiro_commission_queue')
-          if (savedLoc) {
-            try {
-              const parsed = JSON.parse(savedLoc)
-              if (Array.isArray(parsed) && parsed.length > 0) setQueueItems(parsed)
-            } catch {}
-          }
-        }
-      }
+    if (settings.saved && settings.about) {
+      setAbout({ ...defaultAbout, ...settings.about })
     } else {
       const savedLocally = localStorage.getItem('sechiro_about_data')
       if (savedLocally) {
@@ -244,85 +209,7 @@ export default function AdminDashboard() {
     setAuthenticated(false)
   }
 
-  const saveCommissionStatus = (status: 'OPEN' | 'WAITLIST' | 'CLOSED') => {
-    setCommissionStatus(status)
-    localStorage.setItem('sechiro_commission_status', status)
-    setNotice(`Status commission diperbarui: ${status}`)
-    setTimeout(() => setNotice(''), 3000)
-  }
 
-  const saveTiers = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    setWorking(true)
-    setError('')
-    setNotice('')
-    try {
-      const response = await fetch('/api/site-settings', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ commissionTiers }),
-      })
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.error || 'Gagal menyimpan tier komisi.')
-      localStorage.setItem('sechiro_commission_tiers', JSON.stringify(commissionTiers))
-      setNotice('Tier komisi berhasil disimpan untuk semua pengunjung!')
-      setTimeout(() => setNotice(''), 3000)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Terjadi kesalahan.')
-    } finally {
-      setWorking(false)
-    }
-  }
-
-  const saveQueueToBackend = async (itemsToSave?: QueueItem[]) => {
-    let finalQueue = itemsToSave ? [...itemsToSave] : [...queueItems]
-    if (newClientName.trim()) {
-      finalQueue.push({
-        clientName: newClientName.trim(),
-        artType: newArtType.trim() || 'Custom Art',
-        status: newStatus,
-      })
-      setNewClientName('')
-      setNewArtType('')
-    }
-    setQueueItems(finalQueue)
-    localStorage.setItem('sechiro_commission_queue', JSON.stringify(finalQueue))
-
-    setWorking(true)
-    setError('')
-    setNotice('')
-    try {
-      const response = await fetch('/api/site-settings', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ commissionQueue: finalQueue }),
-      })
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.error || 'Gagal menyimpan queue.')
-      setNotice('Commission queue berhasil disimpan untuk semua pengunjung!')
-      setTimeout(() => setNotice(''), 3000)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Terjadi kesalahan.')
-    } finally {
-      setWorking(false)
-    }
-  }
-
-  const addQueueItem = (e: React.FormEvent) => {
-    e.preventDefault()
-    saveQueueToBackend()
-  }
-
-  const removeQueueItem = (index: number) => {
-    const updated = queueItems.filter((_, idx) => idx !== index)
-    saveQueueToBackend(updated)
-  }
-
-  const updateQueueItemStatus = (index: number, status: 'In Queue' | 'Sketching' | 'In Progress' | 'Completed') => {
-    const updated = [...queueItems]
-    updated[index].status = status
-    saveQueueToBackend(updated)
-  }
 
   if (checking) return <main className="min-h-screen bg-[#fff8d7] p-6 grid place-items-center text-[#28558a]">Memeriksa akses studio…</main>
   if (!authenticated) return (
@@ -340,7 +227,7 @@ export default function AdminDashboard() {
   )
 
   return (
-    <main className="min-h-screen bg-slate-50 p-5 font-sans text-slate-900 md:p-10">
+    <main className="min-h-screen bg-[#fff8d7] p-5 font-sans text-slate-900 md:p-10">
       <div className="mx-auto max-w-4xl space-y-7">
         <header className="flex flex-wrap items-center justify-between gap-4 rounded-xl border-2 border-[#28558a] bg-white p-5">
           <div>
@@ -378,164 +265,7 @@ export default function AdminDashboard() {
           </form>
         </section>
 
-        <section className="rounded-xl border-2 border-[#28558a] bg-white p-5 md:p-7">
-          <h2 className="mb-3 text-xl font-extrabold text-[#28558a]">COMMISSION STATUS</h2>
-          <p className="mb-4 text-sm text-slate-600">Atur status komisi yang tampil di halaman /commissions.</p>
-          <div className="flex flex-wrap gap-3">
-            {(['OPEN', 'WAITLIST', 'CLOSED'] as const).map((st) => (
-              <button
-                key={st}
-                type="button"
-                onClick={() => saveCommissionStatus(st)}
-                className={`rounded-lg border-2 px-5 py-3 font-extrabold text-sm transition-all ${
-                  commissionStatus === st
-                    ? 'border-[#28558a] bg-[#28558a] text-white shadow-md'
-                    : 'border-slate-300 bg-slate-50 text-slate-700 hover:bg-slate-100'
-                }`}
-              >
-                {st === 'OPEN' && '🟢 OPEN'}
-                {st === 'WAITLIST' && '🟡 WAITLIST'}
-                {st === 'CLOSED' && '🔴 CLOSED'}
-              </button>
-            ))}
-          </div>
-        </section>
 
-        <section className="rounded-xl border-2 border-[#28558a] bg-white p-5 md:p-7">
-          <h2 className="mb-3 text-xl font-extrabold text-[#28558a]">COMMISSION TIERS & PRICING</h2>
-          <p className="mb-5 text-sm text-slate-600">Ubah judul, harga, dan deskripsi card commission yang tampil di halaman /commissions.</p>
-          <form onSubmit={saveTiers} className="grid gap-6">
-            {commissionTiers.map((tier, idx) => (
-              <div key={tier.id} className="grid gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-sm font-extrabold text-[#28558a]">Tier #{idx + 1} ({tier.id})</p>
-                <div className="grid sm:grid-cols-2 gap-3">
-                  <label className="grid gap-1 text-xs font-bold">Title
-                    <input value={tier.title} onChange={(e) => {
-                      const updated = [...commissionTiers]
-                      updated[idx].title = e.target.value
-                      setCommissionTiers(updated)
-                    }} className="rounded-lg border border-slate-300 p-2.5 font-normal text-sm" />
-                  </label>
-                  <label className="grid gap-1 text-xs font-bold">Tag
-                    <input value={tier.tag} onChange={(e) => {
-                      const updated = [...commissionTiers]
-                      updated[idx].tag = e.target.value
-                      setCommissionTiers(updated)
-                    }} className="rounded-lg border border-slate-300 p-2.5 font-normal text-sm" />
-                  </label>
-                  <label className="grid gap-1 text-xs font-bold">Price
-                    <input value={tier.price} onChange={(e) => {
-                      const updated = [...commissionTiers]
-                      updated[idx].price = e.target.value
-                      setCommissionTiers(updated)
-                    }} className="rounded-lg border border-slate-300 p-2.5 font-normal text-sm" />
-                  </label>
-                  <label className="grid gap-1 text-xs font-bold">Timeframe
-                    <input value={tier.timeframe} onChange={(e) => {
-                      const updated = [...commissionTiers]
-                      updated[idx].timeframe = e.target.value
-                      setCommissionTiers(updated)
-                    }} className="rounded-lg border border-slate-300 p-2.5 font-normal text-sm" />
-                  </label>
-                </div>
-                <label className="grid gap-1 text-xs font-bold">Description
-                  <textarea rows={2} value={tier.description} onChange={(e) => {
-                    const updated = [...commissionTiers]
-                    updated[idx].description = e.target.value
-                    setCommissionTiers(updated)
-                  }} className="rounded-lg border border-slate-300 p-2.5 font-normal text-sm" />
-                </label>
-              </div>
-            ))}
-            <button type="submit" disabled={working} className="min-h-12 rounded-lg border-2 border-[#28558a] bg-[#28558a] px-5 font-bold text-white disabled:opacity-60">{working ? 'SAVING…' : 'SAVE COMMISSION TIERS'}</button>
-          </form>
-        </section>
-
-        <section className="rounded-xl border-2 border-[#28558a] bg-white p-5 md:p-7">
-          <h2 className="mb-3 text-xl font-extrabold text-[#28558a]">COMMISSION QUEUE & WIP MANAGER</h2>
-          <p className="mb-5 text-sm text-slate-600">Tambah klien baru, ubah status (In Queue, Sketching, In Progress/WIP, Completed), atau hapus dari antrean.</p>
-          
-          <form onSubmit={addQueueItem} className="mb-6 grid sm:grid-cols-4 gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <label className="grid gap-1 text-xs font-bold sm:col-span-1">Client Name
-              <input placeholder="e.g. John Doe" value={newClientName} onChange={(e) => setNewClientName(e.target.value)} className="rounded-lg border border-slate-300 p-2.5 font-normal text-sm" required />
-            </label>
-            <label className="grid gap-1 text-xs font-bold sm:col-span-1">Art Type
-              <input placeholder="e.g. Character Art" value={newArtType} onChange={(e) => setNewArtType(e.target.value)} className="rounded-lg border border-slate-300 p-2.5 font-normal text-sm" required />
-            </label>
-            <label className="grid gap-1 text-xs font-bold sm:col-span-1">Initial Status
-              <select value={newStatus} onChange={(e) => setNewStatus(e.target.value as any)} className="rounded-lg border border-slate-300 p-2.5 font-normal text-sm bg-white">
-                <option value="In Queue">In Queue</option>
-                <option value="Sketching">Sketching</option>
-                <option value="In Progress">In Progress (WIP)</option>
-                <option value="Completed">Completed</option>
-              </select>
-            </label>
-            <div className="flex items-end sm:col-span-1">
-              <button type="submit" disabled={working} className="w-full min-h-[42px] rounded-lg border-2 border-[#28558a] bg-[#28558a] px-4 font-bold text-white text-sm disabled:opacity-60">+ ADD TO QUEUE</button>
-            </div>
-          </form>
-
-          <div className="grid gap-3">
-            {queueItems.length === 0 ? (
-              <p className="rounded-lg bg-slate-50 p-5 text-center text-sm text-slate-500">Antrean komisi kosong.</p>
-            ) : (
-              queueItems.map((item, idx) => (
-                <div key={idx} className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
-                  <div className="min-w-0 flex-1 grid sm:grid-cols-2 gap-2">
-                    <input
-                      aria-label={`Client name for item ${idx + 1}`}
-                      value={item.clientName}
-                      onChange={(e) => {
-                        const updated = [...queueItems]
-                        updated[idx].clientName = e.target.value
-                        setQueueItems(updated)
-                      }}
-                      className="rounded-lg border border-slate-300 p-2 font-bold text-sm bg-white text-[#28558a]"
-                    />
-                    <input
-                      aria-label={`Art type for item ${idx + 1}`}
-                      value={item.artType}
-                      onChange={(e) => {
-                        const updated = [...queueItems]
-                        updated[idx].artType = e.target.value
-                        setQueueItems(updated)
-                      }}
-                      className="rounded-lg border border-slate-300 p-2 text-xs bg-white text-slate-700"
-                    />
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <select
-                      aria-label={`Status for item ${idx + 1}`}
-                      value={item.status}
-                      onChange={(e) => {
-                        const updated = [...queueItems]
-                        updated[idx].status = e.target.value as any
-                        setQueueItems(updated)
-                      }}
-                      className="rounded-lg border border-slate-300 p-2 font-bold text-xs bg-white text-[#28558a]"
-                    >
-                      <option value="In Queue">🟡 In Queue</option>
-                      <option value="Sketching">🟣 Sketching</option>
-                      <option value="In Progress">🔵 In Progress (WIP)</option>
-                      <option value="Completed">🟢 Completed</option>
-                    </select>
-                    <button type="button" onClick={() => removeQueueItem(idx)} className="rounded-lg border border-red-300 px-3 py-2 text-xs font-bold text-red-700 bg-white hover:bg-red-50">HAPUS</button>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-          <div className="mt-5">
-            <button
-              type="button"
-              onClick={() => saveQueueToBackend()}
-              disabled={working}
-              className="w-full min-h-12 rounded-lg border-2 border-[#28558a] bg-[#28558a] px-5 font-bold text-white disabled:opacity-60 shadow-md"
-            >
-              {working ? 'SAVING…' : '💾 SAVE COMMISSION QUEUE'}
-            </button>
-          </div>
-        </section>
 
         <section className="rounded-xl border-2 border-[#28558a] bg-white p-5 md:p-7">
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
