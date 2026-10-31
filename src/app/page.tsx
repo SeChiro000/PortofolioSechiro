@@ -48,10 +48,10 @@ export default function Home() {
       <div className="marquee" aria-hidden="true">
         <div className="marquee-track">
           <span>
-            DRAWN WITH FEELING <i>✳</i> COMMISSIONS OPEN <i>✳</i> CHARACTER ILLUSTRATION <i>✳</i> MADE TO MAKE YOU SMILE <i>✳</i> A LITTLE BIT PLAYFUL <i>✳</i>{' '}
+            DRAWN WITH FEELING <i>✳</i> CHARACTER ARTIST <i>✳</i> ILLUSTRATION & 3D <i>✳</i> MADE TO MAKE YOU SMILE <i>✳</i> A LITTLE BIT PLAYFUL <i>✳</i>{' '}
           </span>
           <span>
-            DRAWN WITH FEELING <i>✳</i> COMMISSIONS OPEN <i>✳</i> CHARACTER ILLUSTRATION <i>✳</i> MADE TO MAKE YOU SMILE <i>✳</i> A LITTLE BIT PLAYFUL <i>✳</i>{' '}
+            DRAWN WITH FEELING <i>✳</i> CHARACTER ARTIST <i>✳</i> ILLUSTRATION & 3D <i>✳</i> MADE TO MAKE YOU SMILE <i>✳</i> A LITTLE BIT PLAYFUL <i>✳</i>{' '}
           </span>
         </div>
       </div>
