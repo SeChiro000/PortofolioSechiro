@@ -191,6 +191,7 @@ body {
 
 /* Artwork Lightbox Modal */
 .artwork-modal-backdrop { position:fixed; inset:0; z-index:100; background:rgba(18,36,60,.75); backdrop-filter:blur(8px); display:grid; place-items:center; padding:20px; }
+.artwork-modal-card { position:relative; width:100%; max-width:820px; background:var(--white); border:2px solid var(--blue); border-radius:18px; overflow:hidden; box-shadow:0 24px 48px rgba(40,85,138,0.3); }
 .modal-close-btn { position:absolute; top:16px; right:16px; z-index:10; width:36px; height:36px; border:1px solid var(--blue); border-radius:50%; background:var(--yellow); color:var(--blue); font-weight:800; cursor:pointer; display:grid; place-items:center; transition:transform .2s; }
 .modal-close-btn:hover { transform:rotate(90deg) scale(1.1); }
 .modal-content-grid { display:grid; grid-template-columns:1fr 1fr; }
