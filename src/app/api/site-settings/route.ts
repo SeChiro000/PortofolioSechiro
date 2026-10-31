@@ -1,8 +1,29 @@
 import { NextResponse } from 'next/server'
 import { getPortfolioEnv } from '../../../lib/cloudflare'
 import { hasAdminSession } from '../../../lib/portfolio-admin'
+import fs from 'fs'
+import path from 'path'
 
 export const dynamic = 'force-dynamic'
+
+const SETTINGS_FILE = path.join(process.cwd(), 'src', 'data', 'site-settings.json')
+
+function readLocalSettings() {
+  try {
+    if (fs.existsSync(SETTINGS_FILE)) {
+      return JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8'))
+    }
+  } catch {}
+  return {}
+}
+
+function writeLocalSettings(data: any) {
+  try {
+    const dir = path.dirname(SETTINGS_FILE)
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+    fs.writeFileSync(SETTINGS_FILE, JSON.stringify(data, null, 2), 'utf8')
+  } catch {}
+}
 
 export type AboutSettings = {
   eyebrow: string
@@ -64,29 +85,49 @@ function error(message: string, status: number) {
 
 export async function GET() {
   try {
-    const { DB } = await getPortfolioEnv()
-    const rows = (await DB.prepare('SELECT setting_key, setting_value FROM site_settings').all()) as { results?: { setting_key: string; setting_value: string }[] }
-    let about = DEFAULT_ABOUT
-    let commissionStatus = 'OPEN'
-    let commissionTiers = DEFAULT_TIERS
-    let commissionQueue: any[] = []
+    const local = readLocalSettings()
+    let about = local.about || DEFAULT_ABOUT
+    let commissionStatus = local.commissionStatus || 'OPEN'
+    let commissionTiers = local.commissionTiers || DEFAULT_TIERS
+    let commissionQueue = local.commissionQueue || []
 
-    const list = rows.results || []
-    for (const row of list) {
-      if (row.setting_key === 'about') {
-        try { about = { ...DEFAULT_ABOUT, ...JSON.parse(row.setting_value) } } catch {}
-      } else if (row.setting_key === 'commission_status') {
-        commissionStatus = row.setting_value
-      } else if (row.setting_key === 'commission_tiers') {
-        try { commissionTiers = JSON.parse(row.setting_value) } catch {}
-      } else if (row.setting_key === 'commission_queue') {
-        try { commissionQueue = JSON.parse(row.setting_value) } catch {}
+    try {
+      const { DB } = await getPortfolioEnv()
+      const rows = (await DB.prepare('SELECT setting_key, setting_value FROM site_settings').all()) as { results?: { setting_key: string; setting_value: string }[] }
+      const list = rows.results || []
+      for (const row of list) {
+        if (row.setting_key === 'about') {
+          try { about = { ...DEFAULT_ABOUT, ...JSON.parse(row.setting_value) } } catch {}
+        } else if (row.setting_key === 'commission_status') {
+          commissionStatus = row.setting_value
+        } else if (row.setting_key === 'commission_tiers') {
+          try { commissionTiers = JSON.parse(row.setting_value) } catch {}
+        } else if (row.setting_key === 'commission_queue') {
+          try { commissionQueue = JSON.parse(row.setting_value) } catch {}
+        }
       }
+    } catch {}
+
+    if (!commissionQueue.length && local.commissionQueue && local.commissionQueue.length) {
+      commissionQueue = local.commissionQueue
+    }
+    if (local.commissionStatus && commissionStatus === 'OPEN') {
+      commissionStatus = local.commissionStatus
+    }
+    if (local.commissionTiers && local.commissionTiers.length) {
+      commissionTiers = local.commissionTiers
     }
 
     return NextResponse.json({ about, commissionStatus, commissionTiers, commissionQueue, saved: true }, { headers: { 'Cache-Control': 'no-store' } })
   } catch {
-    return NextResponse.json({ about: DEFAULT_ABOUT, commissionStatus: 'OPEN', commissionTiers: DEFAULT_TIERS, commissionQueue: [], saved: false }, { headers: { 'Cache-Control': 'no-store' } })
+    const local = readLocalSettings()
+    return NextResponse.json({
+      about: local.about || DEFAULT_ABOUT,
+      commissionStatus: local.commissionStatus || 'OPEN',
+      commissionTiers: local.commissionTiers || DEFAULT_TIERS,
+      commissionQueue: local.commissionQueue || [],
+      saved: false
+    }, { headers: { 'Cache-Control': 'no-store' } })
   }
 }
 
@@ -103,6 +144,8 @@ export async function PUT(request: Request) {
       commissionTiers?: CommissionTier[]
       commissionQueue?: any[]
     }
+
+    const local = readLocalSettings()
 
     if (payload.about) {
       const about = payload.about
@@ -121,30 +164,44 @@ export async function PUT(request: Request) {
         description: about.description.trim(),
         image: about.image,
       }
-      await DB.prepare("INSERT INTO site_settings (setting_key, setting_value, updated_at) VALUES ('about', ?, CURRENT_TIMESTAMP) ON CONFLICT(setting_key) DO UPDATE SET setting_value = excluded.setting_value, updated_at = CURRENT_TIMESTAMP")
-        .bind(JSON.stringify(normalized))
-        .run()
+      local.about = normalized
+      try {
+        await DB.prepare("INSERT INTO site_settings (setting_key, setting_value, updated_at) VALUES ('about', ?, CURRENT_TIMESTAMP) ON CONFLICT(setting_key) DO UPDATE SET setting_value = excluded.setting_value, updated_at = CURRENT_TIMESTAMP")
+          .bind(JSON.stringify(normalized))
+          .run()
+      } catch {}
     }
 
     if (payload.commissionStatus) {
       const status = payload.commissionStatus.trim()
       if (!['OPEN', 'WAITLIST', 'CLOSED'].includes(status)) return error('Status komisi tidak valid.', 400)
-      await DB.prepare("INSERT INTO site_settings (setting_key, setting_value, updated_at) VALUES ('commission_status', ?, CURRENT_TIMESTAMP) ON CONFLICT(setting_key) DO UPDATE SET setting_value = excluded.setting_value, updated_at = CURRENT_TIMESTAMP")
-        .bind(status)
-        .run()
+      local.commissionStatus = status
+      try {
+        await DB.prepare("INSERT INTO site_settings (setting_key, setting_value, updated_at) VALUES ('commission_status', ?, CURRENT_TIMESTAMP) ON CONFLICT(setting_key) DO UPDATE SET setting_value = excluded.setting_value, updated_at = CURRENT_TIMESTAMP")
+          .bind(status)
+          .run()
+      } catch {}
     }
 
     if (payload.commissionTiers && Array.isArray(payload.commissionTiers)) {
-      await DB.prepare("INSERT INTO site_settings (setting_key, setting_value, updated_at) VALUES ('commission_tiers', ?, CURRENT_TIMESTAMP) ON CONFLICT(setting_key) DO UPDATE SET setting_value = excluded.setting_value, updated_at = CURRENT_TIMESTAMP")
-        .bind(JSON.stringify(payload.commissionTiers))
-        .run()
+      local.commissionTiers = payload.commissionTiers
+      try {
+        await DB.prepare("INSERT INTO site_settings (setting_key, setting_value, updated_at) VALUES ('commission_tiers', ?, CURRENT_TIMESTAMP) ON CONFLICT(setting_key) DO UPDATE SET setting_value = excluded.setting_value, updated_at = CURRENT_TIMESTAMP")
+          .bind(JSON.stringify(payload.commissionTiers))
+          .run()
+      } catch {}
     }
 
     if (payload.commissionQueue && Array.isArray(payload.commissionQueue)) {
-      await DB.prepare("INSERT INTO site_settings (setting_key, setting_value, updated_at) VALUES ('commission_queue', ?, CURRENT_TIMESTAMP) ON CONFLICT(setting_key) DO UPDATE SET setting_value = excluded.setting_value, updated_at = CURRENT_TIMESTAMP")
-        .bind(JSON.stringify(payload.commissionQueue))
-        .run()
+      local.commissionQueue = payload.commissionQueue
+      try {
+        await DB.prepare("INSERT INTO site_settings (setting_key, setting_value, updated_at) VALUES ('commission_queue', ?, CURRENT_TIMESTAMP) ON CONFLICT(setting_key) DO UPDATE SET setting_value = excluded.setting_value, updated_at = CURRENT_TIMESTAMP")
+          .bind(JSON.stringify(payload.commissionQueue))
+          .run()
+      } catch {}
     }
+
+    writeLocalSettings(local)
 
     return NextResponse.json({ ok: true }, { headers: { 'Cache-Control': 'no-store' } })
   } catch {
