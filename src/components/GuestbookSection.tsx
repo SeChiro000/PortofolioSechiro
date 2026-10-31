@@ -10,6 +10,9 @@ interface GuestbookEntry {
   date: string
 }
 
+const STORAGE_KEY = 'sechiro_guestbook_entries'
+const POSTED_KEY = 'sechiro_guestbook_posted_today'
+
 export default function GuestbookSection() {
   const [entries, setEntries] = useState<GuestbookEntry[]>([])
   const [name, setName] = useState('')
@@ -21,14 +24,50 @@ export default function GuestbookSection() {
   const [sending, setSending] = useState(false)
 
   useEffect(() => {
+    // Check local storage first for instant render & survival across refreshes
+    let localEntries: GuestbookEntry[] = []
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY)
+      if (stored) localEntries = JSON.parse(stored)
+      const posted = localStorage.getItem(POSTED_KEY)
+      const today = new Date().toISOString().slice(0, 10)
+      if (posted === today) setHasPostedToday(true)
+    } catch {}
+
+    if (localEntries.length > 0) {
+      setEntries(localEntries)
+      setLoading(false)
+    }
+
     fetch('/api/guestbook', { cache: 'no-store' })
       .then(async (response) => {
         const data = await response.json()
-        if (!response.ok) throw new Error(data.error || 'Guestbook is temporarily unavailable.')
-        setEntries(data.entries)
-        setHasPostedToday(data.hasPostedToday)
+        if (response.ok && Array.isArray(data.entries)) {
+          // Merge local entries with API entries, avoiding duplicates by id
+          const mergedMap = new Map<string, GuestbookEntry>()
+          // Put API entries first, then local entries
+          data.entries.forEach((item: GuestbookEntry) => mergedMap.set(item.id, item))
+          localEntries.forEach((item: GuestbookEntry) => {
+            if (!mergedMap.has(item.id)) mergedMap.set(item.id, item)
+          })
+          const finalEntries = Array.from(mergedMap.values()).slice(0, 100)
+          setEntries(finalEntries)
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(finalEntries))
+          } catch {}
+          if (typeof data.hasPostedToday === 'boolean') {
+            setHasPostedToday(data.hasPostedToday)
+            if (data.hasPostedToday) {
+              try {
+                localStorage.setItem(POSTED_KEY, new Date().toISOString().slice(0, 10))
+              } catch {}
+            }
+          }
+        }
       })
-      .catch((reason: unknown) => setError(reason instanceof Error ? reason.message : 'Guestbook is temporarily unavailable.'))
+      .catch(() => {
+        // If API fails, local entries already loaded
+      })
       .finally(() => setLoading(false))
   }, [])
 
@@ -52,11 +91,27 @@ export default function GuestbookSection() {
       })
       const data = await response.json()
       if (!response.ok) {
-        if (data.hasPostedToday) setHasPostedToday(true)
+        if (data.hasPostedToday) {
+          setHasPostedToday(true)
+          try {
+            localStorage.setItem(POSTED_KEY, new Date().toISOString().slice(0, 10))
+          } catch {}
+        }
         throw new Error(data.error || 'Your note could not be sent. Please try again.')
       }
-      setEntries((current) => [data.entry, ...current.filter((entry) => entry.id !== data.entry.id)].slice(0, 100))
+
+      const newEntry = data.entry as GuestbookEntry
+      setEntries((current) => {
+        const updated = [newEntry, ...current.filter((entry) => entry.id !== newEntry.id)].slice(0, 100)
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
+        } catch {}
+        return updated
+      })
       setHasPostedToday(true)
+      try {
+        localStorage.setItem(POSTED_KEY, new Date().toISOString().slice(0, 10))
+      } catch {}
       setName('')
       setMessage('')
       setSuccess('Your note is on the wall. Thank you! ✓')
@@ -112,7 +167,7 @@ export default function GuestbookSection() {
         </div>
 
         <div className="guestbook-wall" aria-live="polite" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '16px', maxHeight: '500px', overflowY: 'auto', padding: '8px 4px 8px 0' }}>
-          {loading ? (
+          {loading && entries.length === 0 ? (
             <p style={{ color: '#64748b', fontSize: '13px', gridColumn: '1 / -1', textAlign: 'center', padding: '40px' }}>Loading the visitor wall…</p>
           ) : entries.length === 0 ? (
             <p style={{ color: '#64748b', fontStyle: 'italic', fontSize: '13px', gridColumn: '1 / -1', textAlign: 'center', padding: '40px' }}>No guestbook messages yet. Be the first to pin one!</p>
