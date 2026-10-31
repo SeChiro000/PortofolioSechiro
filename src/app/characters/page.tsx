@@ -36,20 +36,63 @@ export default function CharactersPage() {
 
 
   const [isPlayingMusic, setIsPlayingMusic] = useState(false)
-
-  useEffect(() => () => musicRef.current?.pause(), [])
+  const audioCtxRef = useRef<AudioContext | null>(null)
+  const timerRef = useRef<any>(null)
 
   const toggleMusic = () => {
-    const music = musicRef.current
-    if (!music) return
     if (isPlayingMusic) {
-      music.pause()
-      music.currentTime = 0
+      if (timerRef.current) clearInterval(timerRef.current)
+      if (audioCtxRef.current) {
+        audioCtxRef.current.close()
+        audioCtxRef.current = null
+      }
       setIsPlayingMusic(false)
       return
     }
-    music.play().then(() => setIsPlayingMusic(true)).catch(() => setIsPlayingMusic(false))
+
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext
+      const ctx = new AudioCtx()
+      audioCtxRef.current = ctx
+
+      // Soothing melodic pentatonic notes in Hz (Lo-Fi relaxing piano arpeggio)
+      const notes = [261.63, 329.63, 392.00, 493.88, 587.33, 523.25, 440.00, 392.00]
+      let index = 0
+
+      const playNote = () => {
+        if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') return
+        const osc = ctx.createOscillator()
+        const gain = ctx.createGain()
+
+        osc.type = 'sine'
+        osc.frequency.setValueAtTime(notes[index % notes.length], ctx.currentTime)
+        index++
+
+        gain.gain.setValueAtTime(0.001, ctx.currentTime)
+        gain.gain.exponentialRampToValueAtTime(0.07, ctx.currentTime + 0.1)
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.8)
+
+        osc.connect(gain)
+        gain.connect(ctx.destination)
+
+        osc.start()
+        osc.stop(ctx.currentTime + 1.9)
+      }
+
+      playNote()
+      timerRef.current = setInterval(playNote, 900)
+      setIsPlayingMusic(true)
+    } catch {
+      setIsPlayingMusic(false)
+    }
   }
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current)
+      if (audioCtxRef.current) audioCtxRef.current.close()
+    }
+  }, [])
 
   const activeChar = characters.find(c => c.id === activeVinylId)
 
@@ -61,7 +104,6 @@ export default function CharactersPage() {
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
     >
       <div className="paper-overlay" />
-      <audio ref={musicRef} src="https://ia800304.us.archive.org/34/items/ChopinNocturneOp9No2_102/Chopin_Nocturne_Op9_No2.mp3" loop preload="none" />
       <header className="studio-header">
         <div className="studio-brand">SeChiro<span>STUDIO</span></div>
         <Link href="/" className="studio-back-link">← BACK TO HOME</Link>
