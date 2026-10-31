@@ -96,11 +96,10 @@ export default function WorkGallery() {
       </div>
 
       {/* Gallery Grid */}
-      <motion.div layout className="work-gallery">
+      <div className="work-gallery">
         <AnimatePresence>
           {allArtworks.map((piece, index) => (
             <motion.figure
-              layout
               key={piece.id}
               className="gallery-piece piece-illustration"
               role="button"
@@ -140,7 +139,7 @@ export default function WorkGallery() {
             </motion.figure>
           ))}
         </AnimatePresence>
-      </motion.div>
+      </div>
 
       {/* Artwork Lightbox Modal */}
       <AnimatePresence>
