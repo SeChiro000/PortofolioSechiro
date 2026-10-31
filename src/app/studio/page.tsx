@@ -112,18 +112,21 @@ export default function StudioPage() {
         })
 
         const title = file.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-        newItems.push({
-          id: `local-${Date.now()}-${Math.random()}`,
+        const newItem = {
+          id: `art-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
           title: title || 'New Artwork',
+          category: category,
           image: dataUrl,
           year: String(new Date().getFullYear())
-        })
+        }
+        newItems.push(newItem)
 
         try {
-          const formData = new FormData()
-          formData.set('file', file)
-          formData.set('category', category)
-          await fetch('/api/portfolio/upload', { method: 'POST', body: formData })
+          await fetch('/api/portfolio', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newItem)
+          })
         } catch {}
       }
 
