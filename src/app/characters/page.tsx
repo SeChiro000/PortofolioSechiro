@@ -61,7 +61,7 @@ export default function CharactersPage() {
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
     >
       <div className="paper-overlay" />
-      <audio ref={musicRef} src="/gallery/monarch-of-the-street.ogg" loop preload="none" />
+      <audio ref={musicRef} src="https://ia800304.us.archive.org/34/items/ChopinNocturneOp9No2_102/Chopin_Nocturne_Op9_No2.mp3" loop preload="none" />
       <header className="studio-header">
         <div className="studio-brand">SeChiro<span>STUDIO</span></div>
         <Link href="/" className="studio-back-link">← BACK TO HOME</Link>
