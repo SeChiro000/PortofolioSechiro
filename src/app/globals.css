@@ -1,11 +1,9 @@
 
 .gallery-piece {
   width: 100%;
-  max-width: none;
-  min-width: 0;
-  aspect-ratio: 0.94 / 1;
+  break-inside: avoid;
+  margin-bottom: 24px;
   position: relative;
-  margin: 0;
   overflow: visible;
   background: var(--white);
   border: none;
@@ -72,12 +70,18 @@ a { color:inherit; text-decoration:none; }
 .section-heading h2 i { display:inline-block; margin-left:10px; color:var(--blue); font-size:.33em; font-style:normal; vertical-align:top; animation:spin-slow 10s linear infinite; }
 .gallery-note { margin:16px 0 0; color:rgba(40,85,138,.62); font-size:8px; font-weight:800; letter-spacing:.13em; }
 .gallery-note i { padding:0 7px; color:#d4b600; font-style:normal; }
-.work-gallery { max-width:1380px; margin:0 auto; display:grid; grid-template-columns:repeat(1,minmax(0,1fr)); gap:clamp(16px,2vw,28px); perspective:1100px; }
+.work-gallery {
+  max-width: 1400px;
+  margin: 0 auto;
+  column-count: 1;
+  column-gap: 24px;
+  perspective: 1100px;
+}
 @media (min-width: 640px) {
-  .work-gallery { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .work-gallery { column-count: 2; }
 }
 @media (min-width: 1024px) {
-  .work-gallery { grid-template-columns:repeat(4,minmax(0,1fr)); }
+  .work-gallery { column-count: 4; }
 }
 .gallery-piece img { object-fit:contain; }
 .piece-banana { flex:1 1 225px; max-width:285px; aspect-ratio:.68 / 1; }
