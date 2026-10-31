@@ -22,8 +22,13 @@ export default function AdminDashboard() {
   const [notice, setNotice] = useState('')
   const [about, setAbout] = useState<AboutSettings>(defaultAbout)
   const [entries, setEntries] = useState<GuestbookEntry[]>([])
+  const [commissionStatus, setCommissionStatus] = useState<'OPEN' | 'WAITLIST' | 'CLOSED'>('OPEN')
 
   const loadDashboard = useCallback(async () => {
+    const savedComm = localStorage.getItem('sechiro_commission_status')
+    if (savedComm === 'OPEN' || savedComm === 'WAITLIST' || savedComm === 'CLOSED') {
+      setCommissionStatus(savedComm)
+    }
     const [settingsResponse, guestbookResponse] = await Promise.all([
       fetch('/api/site-settings', { cache: 'no-store' }),
       fetch('/api/guestbook', { cache: 'no-store' }),
@@ -172,6 +177,13 @@ export default function AdminDashboard() {
     setAuthenticated(false)
   }
 
+  const saveCommissionStatus = (status: 'OPEN' | 'WAITLIST' | 'CLOSED') => {
+    setCommissionStatus(status)
+    localStorage.setItem('sechiro_commission_status', status)
+    setNotice(`Status commission diperbarui: ${status}`)
+    setTimeout(() => setNotice(''), 3000)
+  }
+
   if (checking) return <main className="min-h-screen bg-[#fff8d7] p-6 grid place-items-center text-[#28558a]">Memeriksa akses studio…</main>
   if (!authenticated) return (
     <main className="min-h-screen bg-[#fff8d7] p-6 grid place-items-center font-sans text-[#28558a]">
@@ -224,6 +236,29 @@ export default function AdminDashboard() {
             <button type="submit" disabled={working} className="min-h-12 rounded-lg border-2 border-[#28558a] bg-[#28558a] px-5 font-bold text-white disabled:opacity-60">{working ? 'SAVING…' : 'SAVE ABOUT ME'}</button>
             {notice && <p role="status" className="text-sm font-semibold text-green-700">{notice}</p>}
           </form>
+        </section>
+
+        <section className="rounded-xl border-2 border-[#28558a] bg-white p-5 md:p-7">
+          <h2 className="mb-3 text-xl font-extrabold text-[#28558a]">COMMISSION STATUS</h2>
+          <p className="mb-4 text-sm text-slate-600">Atur status komisi yang tampil di halaman /commissions.</p>
+          <div className="flex flex-wrap gap-3">
+            {(['OPEN', 'WAITLIST', 'CLOSED'] as const).map((st) => (
+              <button
+                key={st}
+                type="button"
+                onClick={() => saveCommissionStatus(st)}
+                className={`rounded-lg border-2 px-5 py-3 font-extrabold text-sm transition-all ${
+                  commissionStatus === st
+                    ? 'border-[#28558a] bg-[#28558a] text-white shadow-md'
+                    : 'border-slate-300 bg-slate-50 text-slate-700 hover:bg-slate-100'
+                }`}
+              >
+                {st === 'OPEN' && '🟢 OPEN'}
+                {st === 'WAITLIST' && '🟡 WAITLIST'}
+                {st === 'CLOSED' && '🔴 CLOSED'}
+              </button>
+            ))}
+          </div>
         </section>
 
         <section className="rounded-xl border-2 border-[#28558a] bg-white p-5 md:p-7">
