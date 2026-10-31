@@ -49,6 +49,7 @@ export default function AdminDashboard() {
   const [newCharMood, setNewCharMood] = useState('')
   const [newCharDesc, setNewCharDesc] = useState('')
   const [newCharImage, setNewCharImage] = useState('/gallery/aboutme.png')
+  const [portfolioWorks, setPortfolioWorks] = useState<any[]>([])
 
   const loadDashboard = useCallback(async () => {
     const [settingsResponse, guestbookResponse] = await Promise.all([
@@ -132,8 +133,17 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (!authenticated) return
-    loadDashboard().catch((reason: unknown) => setError(reason instanceof Error ? reason.message : 'Gagal memuat studio.'))
-  }, [authenticated, loadDashboard])
+    Promise.all([
+      fetch('/api/portfolio').then(res => res.ok ? res.json() : []),
+      Promise.resolve(JSON.parse(localStorage.getItem('sechiro_custom_artworks') || '[]'))
+    ]).then(([apiWorks, localWorks]) => {
+      const map = new Map()
+      for (const w of [...localWorks, ...apiWorks]) {
+        map.set(w.image || w.id, w)
+      }
+      setPortfolioWorks(Array.from(map.values()))
+    }).catch(() => {})
+  }, [authenticated])
 
   const signIn = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -327,8 +337,27 @@ export default function AdminDashboard() {
               <label className="grid gap-1 text-sm font-bold">Mood / Vibe
                 <input value={newCharMood} onChange={(e) => setNewCharMood(e.target.value)} placeholder="Misal: Soft & Whimsical" className="rounded-lg border border-slate-300 p-3 font-normal" />
               </label>
-              <label className="grid gap-1 text-sm font-bold">Path Gambar / URL
-                <input value={newCharImage} onChange={(e) => setNewCharImage(e.target.value)} placeholder="/gallery/aboutme.png" className="rounded-lg border border-slate-300 p-3 font-normal" />
+              <label className="grid gap-1 text-sm font-bold">Pilih Karya dari Selected Work / Gallery
+                <select
+                  value={newCharImage}
+                  onChange={(e) => setNewCharImage(e.target.value)}
+                  className="rounded-lg border border-slate-300 p-3 font-normal bg-white"
+                >
+                  <option value="/gallery/aboutme.png">Default (/gallery/aboutme.png)</option>
+                  <option value="/gallery/ProfilePIcture.jpg">Profile Picture (/gallery/ProfilePIcture.jpg)</option>
+                  {portfolioWorks.map((work, idx) => (
+                    <option key={work.id || idx} value={work.image}>
+                      {work.title} ({work.category || 'ILLUSTRATION'})
+                    </option>
+                  ))}
+                </select>
+                <input
+                  type="text"
+                  value={newCharImage}
+                  onChange={(e) => setNewCharImage(e.target.value)}
+                  placeholder="Atau ketik URL/path gambar kustom..."
+                  className="mt-1.5 rounded-lg border border-slate-300 p-2 text-xs font-normal text-slate-600"
+                />
               </label>
             </div>
             <label className="grid gap-1 text-sm font-bold">Deskripsi Karakter
