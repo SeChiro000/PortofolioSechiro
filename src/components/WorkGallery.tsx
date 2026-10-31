@@ -31,26 +31,7 @@ export default function WorkGallery() {
   const [uploadedArtworks, setUploadedArtworks] = useState<Artwork[]>([])
 
   useEffect(() => {
-    let localItems: Artwork[] = []
-    try {
-      const saved = localStorage.getItem('sechiro_custom_artworks')
-      if (saved) {
-        const parsed = JSON.parse(saved)
-        if (Array.isArray(parsed)) {
-          localItems = parsed.map((item: any) => ({
-            id: item.id,
-            title: item.title,
-            category: 'ILLUSTRATION' as const,
-            year: item.year || '2026',
-            description: 'Original artwork by SeChiro.',
-            image: item.image,
-            aspectRatio: 'aspect-[0.94/1]'
-          }))
-        }
-      }
-    } catch {}
-
-    fetch('/api/portfolio')
+    fetch('/api/portfolio?fresh=1')
       .then(async (response) => {
         if (!response.ok) throw new Error('Portfolio storage unavailable')
         const items = await response.json()
@@ -59,14 +40,10 @@ export default function WorkGallery() {
           ...item,
           description: item.description || 'Original artwork by SeChiro.',
         }))
-        const map = new Map<string, Artwork>()
-        for (const art of [...localItems, ...mapped]) {
-          map.set(art.id || art.image, art)
-        }
-        setUploadedArtworks(Array.from(map.values()))
+        setUploadedArtworks(mapped)
       })
       .catch(() => {
-        setUploadedArtworks(localItems)
+        setUploadedArtworks([])
       })
   }, [])
 

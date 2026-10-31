@@ -22,26 +22,13 @@ export default function StudioPage() {
   const [error, setError] = useState('')
 
   const refreshImages = useCallback(async () => {
-    let apiImages: PortfolioImage[] = []
     try {
       const response = await fetch('/api/portfolio?fresh=1', { cache: 'no-store' })
-      if (response.ok) apiImages = await response.json()
-    } catch {}
-
-    let localImages: PortfolioImage[] = []
-    try {
-      const saved = localStorage.getItem('sechiro_custom_artworks')
-      if (saved) {
-        const parsed = JSON.parse(saved)
-        if (Array.isArray(parsed)) localImages = parsed
+      if (response.ok) {
+        const apiImages = await response.json()
+        if (Array.isArray(apiImages)) setImages(apiImages)
       }
     } catch {}
-
-    const map = new Map<string, PortfolioImage>()
-    for (const img of [...localImages, ...apiImages]) {
-      map.set(img.id || img.image, img)
-    }
-    setImages(Array.from(map.values()))
   }, [])
 
   useEffect(() => {

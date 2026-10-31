@@ -146,16 +146,12 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (!authenticated) return
-    Promise.all([
-      fetch('/api/portfolio').then(res => res.ok ? res.json() : []),
-      Promise.resolve(JSON.parse(localStorage.getItem('sechiro_custom_artworks') || '[]'))
-    ]).then(([apiWorks, localWorks]) => {
-      const map = new Map()
-      for (const w of [...localWorks, ...apiWorks]) {
-        map.set(w.image || w.id, w)
-      }
-      setPortfolioWorks(Array.from(map.values()))
-    }).catch(() => {})
+    fetch('/api/portfolio?fresh=1')
+      .then(res => res.ok ? res.json() : [])
+      .then(apiWorks => {
+        if (Array.isArray(apiWorks)) setPortfolioWorks(apiWorks)
+      })
+      .catch(() => {})
   }, [authenticated])
 
   const signIn = async (event: React.FormEvent<HTMLFormElement>) => {
