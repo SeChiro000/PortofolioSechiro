@@ -61,11 +61,24 @@ export default function AdminDashboard() {
     if (!settingsResponse.ok) throw new Error(settings.error || 'Gagal memuat pengaturan situs.')
     if (!guestbookResponse.ok) throw new Error(guestbook.error || 'Gagal memuat guestbook.')
     if (settings.saved && settings.about) {
-      setAbout({ ...defaultAbout, ...settings.about })
+      setAbout({
+        eyebrow: settings.about.eyebrow || defaultAbout.eyebrow,
+        name: settings.about.name || defaultAbout.name,
+        description: settings.about.description || defaultAbout.description,
+        image: settings.about.image || defaultAbout.image,
+      })
     } else {
       const savedLocally = localStorage.getItem('sechiro_about_data')
       if (savedLocally) {
-        try { setAbout({ ...defaultAbout, ...JSON.parse(savedLocally) }) } catch { setAbout({ ...defaultAbout }) }
+        try {
+          const parsed = JSON.parse(savedLocally)
+          setAbout({
+            eyebrow: parsed.eyebrow || defaultAbout.eyebrow,
+            name: parsed.name || defaultAbout.name,
+            description: parsed.description || defaultAbout.description,
+            image: parsed.image || defaultAbout.image,
+          })
+        } catch { setAbout({ ...defaultAbout }) }
       }
     }
     const localChars = localStorage.getItem('sechiro_characters_data')
@@ -299,18 +312,18 @@ export default function AdminDashboard() {
           <h2 className="mb-5 text-xl font-extrabold text-[#28558a]">ABOUT ME</h2>
           <form onSubmit={saveAbout} className="grid gap-4">
             <label className="grid gap-1 text-sm font-bold">Eyebrow
-              <input maxLength={80} value={about.eyebrow} onChange={(event) => setAbout({ ...about, eyebrow: event.target.value })} className="rounded-lg border border-slate-300 p-3 font-normal" />
+              <input maxLength={80} value={about.eyebrow || ''} onChange={(event) => setAbout({ ...about, eyebrow: event.target.value })} className="rounded-lg border border-slate-300 p-3 font-normal" />
             </label>
             <label className="grid gap-1 text-sm font-bold">Name
-              <input maxLength={50} value={about.name} onChange={(event) => setAbout({ ...about, name: event.target.value })} className="rounded-lg border border-slate-300 p-3 font-normal" />
+              <input maxLength={50} value={about.name || ''} onChange={(event) => setAbout({ ...about, name: event.target.value })} className="rounded-lg border border-slate-300 p-3 font-normal" />
             </label>
             <label className="grid gap-1 text-sm font-bold">Description
-              <textarea maxLength={500} rows={3} value={about.description} onChange={(event) => setAbout({ ...about, description: event.target.value })} className="rounded-lg border border-slate-300 p-3 font-normal" />
+              <textarea maxLength={500} rows={3} value={about.description || ''} onChange={(event) => setAbout({ ...about, description: event.target.value })} className="rounded-lg border border-slate-300 p-3 font-normal" />
             </label>
             <div className="grid gap-2 text-sm font-bold">About image
               <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleImageUpload} className="w-full rounded-lg border border-slate-300 p-3 font-normal" />
-              <input aria-label="Image path or URL" value={about.image} onChange={(event) => setAbout({ ...about, image: event.target.value })} className="w-full rounded-lg border border-slate-300 p-3 font-normal" />
-              <img src={about.image} alt="About image preview" className="mt-2 h-28 w-28 rounded-xl border border-slate-200 object-cover" />
+              <input aria-label="Image path or URL" value={about.image || ''} onChange={(event) => setAbout({ ...about, image: event.target.value })} className="w-full rounded-lg border border-slate-300 p-3 font-normal" />
+              <img src={about.image || defaultAbout.image} alt="About image preview" className="mt-2 h-28 w-28 rounded-xl border border-slate-200 object-cover" />
             </div>
             <button type="submit" disabled={working} className="min-h-12 rounded-lg border-2 border-[#28558a] bg-[#28558a] px-5 font-bold text-white disabled:opacity-60">{working ? 'SAVING…' : 'SAVE ABOUT ME'}</button>
             {notice && <p role="status" className="text-sm font-semibold text-green-700">{notice}</p>}
