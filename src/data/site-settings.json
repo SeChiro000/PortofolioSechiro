@@ -1,9 +1,9 @@
 {
   "about": {
-    "name": "Sechiro",
-    "role": "Illustrator & 3D Artist",
-    "bio": "Cel-shaded & comic style artwork, 3D character modeling with custom outlines, and interactive digital art.",
-    "avatarUrl": "/gallery/avatar.jpg"
+    "eyebrow": "THE ARTIST BEHIND THE DOODLES",
+    "name": "SECHIRO.",
+    "description": "I make expressive character art, playful illustrations, and drawings with a life of their own.",
+    "image": "/gallery/aboutme.png"
   },
   "commissionStatus": "OPEN",
   "commissionTiers": [
