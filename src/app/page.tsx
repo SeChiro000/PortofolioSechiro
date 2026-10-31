@@ -81,21 +81,6 @@ export default function Home() {
       {/* Selected Work with Project Details */}
       <WorkGallery />
 
-      {/* Permanent About Section */}
-      <section className="about-section" id="about">
-        <span className="about-doodle" aria-hidden="true">✿</span>
-        <p className="eyebrow">{aboutData.eyebrow}</p>
-        <h2 style={{ color: 'var(--blue)' }}>
-          HI, I’M <span style={{ color: "transparent", WebkitTextStroke: "2px var(--blue)" }}>{aboutData.name}</span>
-        </h2>
-        <p className="about-copy">{aboutData.description}</p>
-        <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'center' }}>
-          <div style={{ width: '160px', height: '160px', borderRadius: '24px', overflow: 'hidden', border: '3px solid var(--blue)', position: 'relative', background: 'white' }}>
-            <Image src={aboutData.image} alt={aboutData.name} fill style={{ objectFit: 'cover' }} />
-          </div>
-        </div>
-      </section>
-
       <GuestbookSection />
 
       {/* Commission Section */}
