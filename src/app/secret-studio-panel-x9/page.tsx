@@ -51,10 +51,23 @@ export default function AdminDashboard() {
   const [working, setWorking] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
+  type QueueItem = {
+    clientName: string
+    artType: string
+    status: 'In Queue' | 'Sketching' | 'In Progress' | 'Completed'
+  }
+
   const [about, setAbout] = useState<AboutSettings>(defaultAbout)
   const [entries, setEntries] = useState<GuestbookEntry[]>([])
   const [commissionStatus, setCommissionStatus] = useState<'OPEN' | 'WAITLIST' | 'CLOSED'>('OPEN')
   const [commissionTiers, setCommissionTiers] = useState<CommissionTier[]>(defaultTiers)
+  const [queueItems, setQueueItems] = useState<QueueItem[]>([
+    { clientName: 'Client A', artType: 'Character Art', status: 'In Progress' },
+    { clientName: 'Client B', artType: 'Custom Illustration', status: 'In Queue' }
+  ])
+  const [newClientName, setNewClientName] = useState('')
+  const [newArtType, setNewArtType] = useState('Character Art')
+  const [newStatus, setNewStatus] = useState<'In Queue' | 'Sketching' | 'In Progress' | 'Completed'>('In Queue')
 
   const loadDashboard = useCallback(async () => {
     const savedComm = localStorage.getItem('sechiro_commission_status')
@@ -64,6 +77,10 @@ export default function AdminDashboard() {
     const savedTiers = localStorage.getItem('sechiro_commission_tiers')
     if (savedTiers) {
       try { setCommissionTiers(JSON.parse(savedTiers)) } catch {}
+    }
+    const savedQueue = localStorage.getItem('sechiro_commission_queue')
+    if (savedQueue) {
+      try { setQueueItems(JSON.parse(savedQueue)) } catch {}
     }
 
     const [settingsResponse, guestbookResponse] = await Promise.all([
@@ -78,6 +95,7 @@ export default function AdminDashboard() {
       if (settings.about) setAbout({ ...defaultAbout, ...settings.about })
       if (settings.commissionStatus) setCommissionStatus(settings.commissionStatus)
       if (settings.commissionTiers) setCommissionTiers(settings.commissionTiers)
+      if (settings.commissionQueue && Array.isArray(settings.commissionQueue)) setQueueItems(settings.commissionQueue)
     } else {
       const savedLocally = localStorage.getItem('sechiro_about_data')
       if (savedLocally) {
@@ -246,6 +264,48 @@ export default function AdminDashboard() {
     }
   }
 
+  const saveQueueToBackend = async (updatedQueue: QueueItem[]) => {
+    setWorking(true)
+    setError('')
+    setNotice('')
+    try {
+      const response = await fetch('/api/site-settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ commissionQueue: updatedQueue }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'Gagal menyimpan queue.')
+      localStorage.setItem('sechiro_commission_queue', JSON.stringify(updatedQueue))
+      setQueueItems(updatedQueue)
+      setNotice('Commission queue berhasil diperbarui untuk semua pengunjung!')
+      setTimeout(() => setNotice(''), 3000)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Terjadi kesalahan.')
+    } finally {
+      setWorking(false)
+    }
+  }
+
+  const addQueueItem = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newClientName.trim()) return
+    const updated = [...queueItems, { clientName: newClientName.trim(), artType: newArtType.trim(), status: newStatus }]
+    setNewClientName('')
+    saveQueueToBackend(updated)
+  }
+
+  const removeQueueItem = (index: number) => {
+    const updated = queueItems.filter((_, idx) => idx !== index)
+    saveQueueToBackend(updated)
+  }
+
+  const updateQueueItemStatus = (index: number, status: 'In Queue' | 'Sketching' | 'In Progress' | 'Completed') => {
+    const updated = [...queueItems]
+    updated[index].status = status
+    saveQueueToBackend(updated)
+  }
+
   if (checking) return <main className="min-h-screen bg-[#fff8d7] p-6 grid place-items-center text-[#28558a]">Memeriksa akses studio…</main>
   if (!authenticated) return (
     <main className="min-h-screen bg-[#fff8d7] p-6 grid place-items-center font-sans text-[#28558a]">
@@ -371,6 +431,58 @@ export default function AdminDashboard() {
             ))}
             <button type="submit" disabled={working} className="min-h-12 rounded-lg border-2 border-[#28558a] bg-[#28558a] px-5 font-bold text-white disabled:opacity-60">{working ? 'SAVING…' : 'SAVE COMMISSION TIERS'}</button>
           </form>
+        </section>
+
+        <section className="rounded-xl border-2 border-[#28558a] bg-white p-5 md:p-7">
+          <h2 className="mb-3 text-xl font-extrabold text-[#28558a]">COMMISSION QUEUE & WIP MANAGER</h2>
+          <p className="mb-5 text-sm text-slate-600">Tambah klien baru, ubah status (In Queue, Sketching, In Progress/WIP, Completed), atau hapus dari antrean.</p>
+          
+          <form onSubmit={addQueueItem} className="mb-6 grid sm:grid-cols-4 gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <label className="grid gap-1 text-xs font-bold sm:col-span-1">Client Name
+              <input placeholder="e.g. John Doe" value={newClientName} onChange={(e) => setNewClientName(e.target.value)} className="rounded-lg border border-slate-300 p-2.5 font-normal text-sm" required />
+            </label>
+            <label className="grid gap-1 text-xs font-bold sm:col-span-1">Art Type
+              <input placeholder="e.g. Character Art" value={newArtType} onChange={(e) => setNewArtType(e.target.value)} className="rounded-lg border border-slate-300 p-2.5 font-normal text-sm" required />
+            </label>
+            <label className="grid gap-1 text-xs font-bold sm:col-span-1">Initial Status
+              <select value={newStatus} onChange={(e) => setNewStatus(e.target.value as any)} className="rounded-lg border border-slate-300 p-2.5 font-normal text-sm bg-white">
+                <option value="In Queue">In Queue</option>
+                <option value="Sketching">Sketching</option>
+                <option value="In Progress">In Progress (WIP)</option>
+                <option value="Completed">Completed</option>
+              </select>
+            </label>
+            <div className="flex items-end sm:col-span-1">
+              <button type="submit" disabled={working} className="w-full min-h-[42px] rounded-lg border-2 border-[#28558a] bg-[#28558a] px-4 font-bold text-white text-sm disabled:opacity-60">+ ADD TO QUEUE</button>
+            </div>
+          </form>
+
+          <div className="grid gap-3">
+            {queueItems.length === 0 ? (
+              <p className="rounded-lg bg-slate-50 p-5 text-center text-sm text-slate-500">Antrean komisi kosong.</p>
+            ) : (
+              queueItems.map((item, idx) => (
+                <div key={idx} className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-extrabold text-[#28558a]">{item.clientName} <span className="ml-2 font-normal text-xs text-slate-600">({item.artType})</span></p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <select
+                      value={item.status}
+                      onChange={(e) => updateQueueItemStatus(idx, e.target.value as any)}
+                      className="rounded-lg border border-slate-300 p-2 font-bold text-xs bg-white text-[#28558a]"
+                    >
+                      <option value="In Queue">🟡 In Queue</option>
+                      <option value="Sketching">🟣 Sketching</option>
+                      <option value="In Progress">🔵 In Progress (WIP)</option>
+                      <option value="Completed">🟢 Completed</option>
+                    </select>
+                    <button type="button" onClick={() => removeQueueItem(idx)} className="rounded-lg border border-red-300 px-3 py-2 text-xs font-bold text-red-700 bg-white hover:bg-red-50">HAPUS</button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </section>
 
         <section className="rounded-xl border-2 border-[#28558a] bg-white p-5 md:p-7">

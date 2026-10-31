@@ -65,12 +65,18 @@ export default function CommissionSection() {
     const savedQueue = localStorage.getItem('sechiro_commission_queue')
     if (savedQueue) {
       try { setQueueList(JSON.parse(savedQueue)) } catch (e) {}
-    } else {
-      setQueueList([
-        { clientName: 'Client A', artType: 'Character Art', status: 'In Progress' },
-        { clientName: 'Client B', artType: 'Custom Illustration', status: 'In Queue' }
-      ])
     }
+
+    fetch('/api/site-settings', { cache: 'no-store' })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.saved) {
+          if (data.commissionQueue && Array.isArray(data.commissionQueue)) {
+            setQueueList(data.commissionQueue)
+          }
+        }
+      })
+      .catch(() => {})
   }, [])
 
   const activeTierObj = tiers.find((t) => t.id === selectedTier) || tiers[0]

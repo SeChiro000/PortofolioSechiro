@@ -69,6 +69,10 @@ export async function GET() {
     let about = DEFAULT_ABOUT
     let commissionStatus = 'OPEN'
     let commissionTiers = DEFAULT_TIERS
+    let commissionQueue = [
+      { clientName: 'Client A', artType: 'Character Art', status: 'In Progress' },
+      { clientName: 'Client B', artType: 'Custom Illustration', status: 'In Queue' }
+    ]
 
     const list = rows.results || []
     for (const row of list) {
@@ -78,12 +82,14 @@ export async function GET() {
         commissionStatus = row.setting_value
       } else if (row.setting_key === 'commission_tiers') {
         try { commissionTiers = JSON.parse(row.setting_value) } catch {}
+      } else if (row.setting_key === 'commission_queue') {
+        try { commissionQueue = JSON.parse(row.setting_value) } catch {}
       }
     }
 
-    return NextResponse.json({ about, commissionStatus, commissionTiers, saved: true }, { headers: { 'Cache-Control': 'no-store' } })
+    return NextResponse.json({ about, commissionStatus, commissionTiers, commissionQueue, saved: true }, { headers: { 'Cache-Control': 'no-store' } })
   } catch {
-    return NextResponse.json({ about: DEFAULT_ABOUT, commissionStatus: 'OPEN', commissionTiers: DEFAULT_TIERS, saved: false }, { headers: { 'Cache-Control': 'no-store' } })
+    return NextResponse.json({ about: DEFAULT_ABOUT, commissionStatus: 'OPEN', commissionTiers: DEFAULT_TIERS, commissionQueue: [], saved: false }, { headers: { 'Cache-Control': 'no-store' } })
   }
 }
 
@@ -98,6 +104,7 @@ export async function PUT(request: Request) {
       about?: Partial<AboutSettings>
       commissionStatus?: string
       commissionTiers?: CommissionTier[]
+      commissionQueue?: any[]
     }
 
     if (payload.about) {
@@ -133,6 +140,12 @@ export async function PUT(request: Request) {
     if (payload.commissionTiers && Array.isArray(payload.commissionTiers)) {
       await DB.prepare("INSERT INTO site_settings (setting_key, setting_value, updated_at) VALUES ('commission_tiers', ?, CURRENT_TIMESTAMP) ON CONFLICT(setting_key) DO UPDATE SET setting_value = excluded.setting_value, updated_at = CURRENT_TIMESTAMP")
         .bind(JSON.stringify(payload.commissionTiers))
+        .run()
+    }
+
+    if (payload.commissionQueue && Array.isArray(payload.commissionQueue)) {
+      await DB.prepare("INSERT INTO site_settings (setting_key, setting_value, updated_at) VALUES ('commission_queue', ?, CURRENT_TIMESTAMP) ON CONFLICT(setting_key) DO UPDATE SET setting_value = excluded.setting_value, updated_at = CURRENT_TIMESTAMP")
+        .bind(JSON.stringify(payload.commissionQueue))
         .run()
     }
 
