@@ -42,12 +42,28 @@ export type CommissionTier = {
   icon: string
 }
 
+export type CharacterItem = {
+  id: number
+  name: string
+  role: string
+  mood: string
+  description: string
+  initials: string
+  image: string
+}
+
 const DEFAULT_ABOUT: AboutSettings = {
   eyebrow: 'THE ARTIST BEHIND THE DOODLES',
   name: 'SECHIRO.',
   description: 'I make expressive character art, playful illustrations, and drawings with a life of their own.',
   image: '/gallery/aboutme.png',
 }
+
+const DEFAULT_CHARACTERS: CharacterItem[] = [
+  { id: 1, name: 'Iroha', role: 'ILLUSTRATION', mood: 'Soft & Whimsical', description: 'A playful illustration study focusing on soft forms.', initials: 'IR', image: '/gallery/ProfilePIcture.jpg' },
+  { id: 2, name: 'Karasu', role: '2D CHARACTER', mood: 'Sharp & Celestial', description: 'A character concept with sharp lines and a celestial mood.', initials: 'KR', image: '/gallery/aboutme.png' },
+  { id: 3, name: 'Momo', role: 'CHIBI', mood: 'Cute & Vibrant', description: 'A chibi study with cute proportions and a bright personality.', initials: 'MM', image: '/gallery/aboutme.png' }
+]
 
 const DEFAULT_TIERS: CommissionTier[] = [
   {
@@ -90,6 +106,7 @@ export async function GET() {
     let commissionStatus = local.commissionStatus || 'OPEN'
     let commissionTiers = local.commissionTiers || DEFAULT_TIERS
     let commissionQueue = local.commissionQueue || []
+    let characters = local.characters || DEFAULT_CHARACTERS
 
     try {
       const { DB } = await getPortfolioEnv()
@@ -104,6 +121,8 @@ export async function GET() {
           try { commissionTiers = JSON.parse(row.setting_value) } catch {}
         } else if (row.setting_key === 'commission_queue') {
           try { commissionQueue = JSON.parse(row.setting_value) } catch {}
+        } else if (row.setting_key === 'characters') {
+          try { characters = JSON.parse(row.setting_value) } catch {}
         }
       }
     } catch {}
@@ -117,8 +136,11 @@ export async function GET() {
     if (local.commissionTiers && local.commissionTiers.length) {
       commissionTiers = local.commissionTiers
     }
+    if (local.characters && local.characters.length) {
+      characters = local.characters
+    }
 
-    return NextResponse.json({ about, commissionStatus, commissionTiers, commissionQueue, saved: true }, { headers: { 'Cache-Control': 'no-store' } })
+    return NextResponse.json({ about, commissionStatus, commissionTiers, commissionQueue, characters, saved: true }, { headers: { 'Cache-Control': 'no-store' } })
   } catch {
     const local = readLocalSettings()
     return NextResponse.json({
@@ -126,6 +148,7 @@ export async function GET() {
       commissionStatus: local.commissionStatus || 'OPEN',
       commissionTiers: local.commissionTiers || DEFAULT_TIERS,
       commissionQueue: local.commissionQueue || [],
+      characters: local.characters || DEFAULT_CHARACTERS,
       saved: false
     }, { headers: { 'Cache-Control': 'no-store' } })
   }
@@ -151,6 +174,7 @@ export async function PUT(request: Request) {
       commissionStatus?: string
       commissionTiers?: CommissionTier[]
       commissionQueue?: any[]
+      characters?: CharacterItem[]
     }
 
     const local = readLocalSettings()
@@ -205,6 +229,15 @@ export async function PUT(request: Request) {
       try {
         await DB.prepare("INSERT INTO site_settings (setting_key, setting_value, updated_at) VALUES ('commission_queue', ?, CURRENT_TIMESTAMP) ON CONFLICT(setting_key) DO UPDATE SET setting_value = excluded.setting_value, updated_at = CURRENT_TIMESTAMP")
           .bind(JSON.stringify(payload.commissionQueue))
+          .run()
+      } catch {}
+    }
+
+    if (payload.characters && Array.isArray(payload.characters)) {
+      local.characters = payload.characters
+      try {
+        await DB.prepare("INSERT INTO site_settings (setting_key, setting_value, updated_at) VALUES ('characters', ?, CURRENT_TIMESTAMP) ON CONFLICT(setting_key) DO UPDATE SET setting_value = excluded.setting_value, updated_at = CURRENT_TIMESTAMP")
+          .bind(JSON.stringify(payload.characters))
           .run()
       } catch {}
     }

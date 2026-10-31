@@ -15,20 +15,12 @@ export default function CharactersPage() {
   const musicRef = useRef<HTMLAudioElement>(null)
 
   useEffect(() => {
-    fetch('/api/portfolio')
+    fetch('/api/site-settings')
       .then(res => res.json())
       .then(data => {
-        if (!Array.isArray(data) || data.length === 0) return
-        const mapped = data.map((item: any, idx: number) => ({
-          id: idx + 1,
-          name: item.title,
-          role: item.category || 'ILLUSTRATION',
-          mood: item.description || 'Custom Vibe',
-          description: item.description || 'Hand-crafted character artwork.',
-          initials: item.title ? item.title.substring(0, 2).toUpperCase() : 'ART',
-          image: item.image?.startsWith('/') || item.image?.startsWith('http') ? item.image : `/gallery/${item.image}`
-        }))
-        setCharacters(mapped)
+        if (data.characters && Array.isArray(data.characters) && data.characters.length > 0) {
+          setCharacters(data.characters)
+        }
       })
       .catch(() => {})
   }, [])

@@ -5,7 +5,7 @@ import Link from 'next/link'
 
 type AboutSettings = { eyebrow: string; name: string; description: string; image: string }
 type GuestbookEntry = { id: string; name: string; message: string; date: string }
-type CommissionTier = { id: string; title: string; tag: string; price: string; timeframe: string; description: string; icon: string }
+type CharacterItem = { id: number; name: string; role: string; mood: string; description: string; initials: string; image: string }
 
 const defaultAbout: AboutSettings = {
   eyebrow: 'THE ARTIST BEHIND THE DOODLES',
@@ -14,35 +14,7 @@ const defaultAbout: AboutSettings = {
   image: '/gallery/aboutme.png',
 }
 
-const defaultTiers: CommissionTier[] = [
-  {
-    id: 'character',
-    title: 'CHARACTER ART',
-    tag: 'CHARACTER FOCUS',
-    price: 'Quote after brief',
-    timeframe: 'Timing agreed together',
-    description: 'Expressive hand-drawn character illustrations tailored to your vision.',
-    icon: '✦',
-  },
-  {
-    id: 'illustration',
-    title: 'CUSTOM ILLUSTRATION',
-    tag: 'MADE FOR YOUR IDEA',
-    price: 'Quote after brief',
-    timeframe: 'Timing agreed together',
-    description: 'A hand-drawn scene, object, or concept illustrated in a playful, colorful style.',
-    icon: '✿',
-  },
-  {
-    id: 'doodles',
-    title: 'DOODLE PACK & GRAPHICS',
-    tag: 'CREATIVE',
-    price: 'Quote after brief',
-    timeframe: 'Timing agreed together',
-    description: 'Custom playful doodle sets, icons, and visual assets for your brand.',
-    icon: '♪',
-  },
-]
+
 
 export default function AdminDashboard() {
   const [authenticated, setAuthenticated] = useState(false)
@@ -59,6 +31,16 @@ export default function AdminDashboard() {
 
   const [about, setAbout] = useState<AboutSettings>(defaultAbout)
   const [entries, setEntries] = useState<GuestbookEntry[]>([])
+  const [characters, setCharacters] = useState<CharacterItem[]>([
+    { id: 1, name: 'Iroha', role: 'ILLUSTRATION', mood: 'Soft & Whimsical', description: 'A playful illustration study focusing on soft forms.', initials: 'IR', image: '/gallery/ProfilePIcture.jpg' },
+    { id: 2, name: 'Karasu', role: '2D CHARACTER', mood: 'Sharp & Celestial', description: 'A character concept with sharp lines and a celestial mood.', initials: 'KR', image: '/gallery/aboutme.png' },
+    { id: 3, name: 'Momo', role: 'CHIBI', mood: 'Cute & Vibrant', description: 'A chibi study with cute proportions and a bright personality.', initials: 'MM', image: '/gallery/aboutme.png' }
+  ])
+  const [newCharName, setNewCharName] = useState('')
+  const [newCharRole, setNewCharRole] = useState('')
+  const [newCharMood, setNewCharMood] = useState('')
+  const [newCharDesc, setNewCharDesc] = useState('')
+  const [newCharImage, setNewCharImage] = useState('/gallery/aboutme.png')
 
   const loadDashboard = useCallback(async () => {
     const [settingsResponse, guestbookResponse] = await Promise.all([
@@ -77,8 +59,58 @@ export default function AdminDashboard() {
         try { setAbout({ ...defaultAbout, ...JSON.parse(savedLocally) }) } catch { setAbout({ ...defaultAbout }) }
       }
     }
+    if (settings.saved && settings.characters && Array.isArray(settings.characters)) {
+      setCharacters(settings.characters)
+    }
     setEntries(guestbook.entries)
   }, [])
+
+  const saveCharacters = async (updatedChars: CharacterItem[]) => {
+    setWorking(true)
+    setError('')
+    setNotice('')
+    try {
+      const response = await fetch('/api/site-settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ characters: updatedChars }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'Gagal menyimpan karakter.')
+      setCharacters(updatedChars)
+      setNotice('Koleksi karakter berhasil diperbarui!')
+      setTimeout(() => setNotice(''), 3000)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Terjadi kesalahan.')
+    } finally {
+      setWorking(false)
+    }
+  }
+
+  const addCharacter = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newCharName.trim()) return
+    const newItem: CharacterItem = {
+      id: Date.now(),
+      name: newCharName.trim(),
+      role: newCharRole.trim() || 'CHARACTER',
+      mood: newCharMood.trim() || 'Standard Vibe',
+      description: newCharDesc.trim() || 'Hand-crafted character artwork.',
+      initials: newCharName.substring(0, 2).toUpperCase(),
+      image: newCharImage || '/gallery/aboutme.png'
+    }
+    const updated = [...characters, newItem]
+    setNewCharName('')
+    setNewCharRole('')
+    setNewCharMood('')
+    setNewCharDesc('')
+    saveCharacters(updated)
+  }
+
+  const deleteCharacter = (id: number) => {
+    const updated = characters.filter(c => c.id !== id)
+    saveCharacters(updated)
+  }
 
   useEffect(() => {
     fetch('/api/admin/session')
@@ -263,6 +295,52 @@ export default function AdminDashboard() {
             <button type="submit" disabled={working} className="min-h-12 rounded-lg border-2 border-[#28558a] bg-[#28558a] px-5 font-bold text-white disabled:opacity-60">{working ? 'SAVING…' : 'SAVE ABOUT ME'}</button>
             {notice && <p role="status" className="text-sm font-semibold text-green-700">{notice}</p>}
           </form>
+        </section>
+
+        <section className="rounded-xl border-2 border-[#28558a] bg-white p-5 md:p-7">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-extrabold text-[#28558a]">CHARACTER COLLECTION MANAGER</h2>
+              <p className="mt-1 text-sm text-slate-600">Atur karakter yang muncul di halaman Character Collection</p>
+            </div>
+          </div>
+
+          <form onSubmit={addCharacter} className="mb-6 grid gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <h3 className="font-bold text-slate-800">Tambah Karakter Baru</h3>
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="grid gap-1 text-sm font-bold">Nama Karakter
+                <input value={newCharName} onChange={(e) => setNewCharName(e.target.value)} placeholder="Misal: Iroha" required className="rounded-lg border border-slate-300 p-3 font-normal" />
+              </label>
+              <label className="grid gap-1 text-sm font-bold">Role / Kategori
+                <input value={newCharRole} onChange={(e) => setNewCharRole(e.target.value)} placeholder="Misal: ILLUSTRATION" className="rounded-lg border border-slate-300 p-3 font-normal" />
+              </label>
+              <label className="grid gap-1 text-sm font-bold">Mood / Vibe
+                <input value={newCharMood} onChange={(e) => setNewCharMood(e.target.value)} placeholder="Misal: Soft & Whimsical" className="rounded-lg border border-slate-300 p-3 font-normal" />
+              </label>
+              <label className="grid gap-1 text-sm font-bold">Path Gambar / URL
+                <input value={newCharImage} onChange={(e) => setNewCharImage(e.target.value)} placeholder="/gallery/aboutme.png" className="rounded-lg border border-slate-300 p-3 font-normal" />
+              </label>
+            </div>
+            <label className="grid gap-1 text-sm font-bold">Deskripsi Karakter
+              <textarea rows={2} value={newCharDesc} onChange={(e) => setNewCharDesc(e.target.value)} placeholder="Deskripsi singkat karakter..." className="rounded-lg border border-slate-300 p-3 font-normal" />
+            </label>
+            <button type="submit" disabled={working} className="rounded-lg bg-[#28558a] px-4 py-3 font-bold text-white hover:bg-[#1d3d63] disabled:opacity-60">TAMBAH KARAKTER</button>
+          </form>
+
+          <div className="grid gap-3">
+            {characters.map((char) => (
+              <div key={char.id} className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-slate-200 bg-white p-4">
+                <div className="flex items-center gap-3">
+                  <img src={char.image} alt={char.name} className="h-12 w-12 rounded-lg object-cover border border-slate-200" />
+                  <div>
+                    <h4 className="font-bold text-[#28558a]">{char.name} <span className="ml-2 rounded bg-blue-50 px-2 py-0.5 text-xs font-semibold text-[#28558a]">{char.role}</span></h4>
+                    <p className="text-xs text-slate-500">{char.mood} — {char.description}</p>
+                  </div>
+                </div>
+                <button type="button" onClick={() => deleteCharacter(char.id)} className="rounded-full border border-red-300 px-3 py-2 text-xs font-bold text-red-700 hover:bg-red-50">HAPUS</button>
+              </div>
+            ))}
+          </div>
         </section>
 
 
