@@ -25,9 +25,9 @@ function error(message: string, status: number) {
 export async function GET() {
   try {
     const { DB } = await getPortfolioEnv()
-    const saved = await DB.prepare('SELECT setting_value FROM site_settings WHERE setting_key = ?')
+    const saved = (await DB.prepare('SELECT setting_value FROM site_settings WHERE setting_key = ?')
       .bind('about')
-      .first<{ setting_value: string }>()
+      .first()) as { setting_value: string } | null
     if (!saved) return NextResponse.json({ about: DEFAULT_ABOUT, saved: false }, { headers: { 'Cache-Control': 'no-store' } })
     try {
       return NextResponse.json({ about: { ...DEFAULT_ABOUT, ...JSON.parse(saved.setting_value) }, saved: true }, { headers: { 'Cache-Control': 'no-store' } })

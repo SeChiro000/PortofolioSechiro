@@ -41,9 +41,9 @@ function jsonError(message: string, status: number) {
 
 async function readEntries() {
   const { DB } = await getPortfolioEnv()
-  const result = await DB.prepare('SELECT id, name, message, post_date AS date FROM guestbook_entries ORDER BY created_at DESC LIMIT ?')
+  const result = (await DB.prepare('SELECT id, name, message, post_date AS date FROM guestbook_entries ORDER BY created_at DESC LIMIT ?')
     .bind(MAX_ENTRIES)
-    .all<GuestbookEntry>()
+    .all()) as { results: GuestbookEntry[] }
   return result.results
 }
 
@@ -56,9 +56,9 @@ export async function GET(request: Request) {
     const deviceHash = createHash('sha256').update(deviceId).digest('hex')
     const [entries, limit] = await Promise.all([
       readEntries(),
-      DB.prepare('SELECT 1 AS posted FROM guestbook_daily_limits WHERE device_hash = ? AND post_date = ?')
+      (await DB.prepare('SELECT 1 AS posted FROM guestbook_daily_limits WHERE device_hash = ? AND post_date = ?')
         .bind(deviceHash, today)
-        .first<{ posted: number }>(),
+        .first()) as { posted: number } | null,
     ])
     const response = NextResponse.json({ entries, hasPostedToday: Boolean(limit) }, { headers: { 'Cache-Control': 'no-store' } })
     if (!existingDeviceId) {

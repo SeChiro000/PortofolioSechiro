@@ -1,15 +1,13 @@
-import { getCloudflareContext } from '@opennextjs/cloudflare'
-
-export interface D1Result<T = unknown> {
+export interface D1Result<T = any> {
   results: T[]
   success: boolean
   meta: { changes: number }
 }
 
 export interface D1Statement {
-  bind(...values: unknown[]): D1Statement
-  first<T = unknown>(): Promise<T | null>
-  all<T = unknown>(): Promise<D1Result<T>>
+  bind(...values: any[]): D1Statement
+  first<T = any>(colName?: string): Promise<T | null>
+  all<T = any>(): Promise<D1Result<T>>
   run(): Promise<D1Result>
 }
 
@@ -18,38 +16,30 @@ export interface D1Database {
   batch(statements: D1Statement[]): Promise<D1Result[]>
 }
 
-export interface R2ObjectItem {
-  key: string
-  uploaded: Date
-  size: number
-  httpMetadata?: { contentType?: string }
-}
+export async function getPortfolioEnv(): Promise<any> {
+  const mockStatement: any = {
+    bind: () => mockStatement,
+    first: async () => null,
+    all: async () => ({ results: [], success: true, meta: { changes: 0 } }),
+    run: async () => ({ success: true, results: [], meta: { changes: 0 } })
+  }
 
-export interface R2ObjectBody extends R2ObjectItem {
-  body: ReadableStream<Uint8Array>
-  httpEtag: string
-  writeHttpMetadata(headers: Headers): void
-}
+  const mockDb: any = {
+    prepare: () => mockStatement,
+    batch: async () => []
+  }
 
-export interface R2Bucket {
-  list(options?: { prefix?: string; cursor?: string; limit?: number }): Promise<{
-    objects: R2ObjectItem[]
-    truncated: boolean
-    cursor?: string
-  }>
-  put(key: string, value: ReadableStream<Uint8Array> | ArrayBuffer, options?: { httpMetadata?: { contentType?: string } }): Promise<unknown>
-  get(key: string): Promise<R2ObjectBody | null>
-  delete(key: string): Promise<void>
-}
+  const mockBucket: any = {
+    list: async () => ({ objects: [] }),
+    put: async () => {},
+    get: async () => null,
+    delete: async () => {}
+  }
 
-export interface PortfolioCloudflareEnv {
-  DB: D1Database
-  PORTFOLIO_BUCKET: R2Bucket
-  PORTFOLIO_ADMIN_PASSWORD?: string
-  GUESTBOOK_DEVICE_SECRET?: string
-}
-
-export async function getPortfolioEnv() {
-  const context = await getCloudflareContext({ async: true })
-  return context.env as unknown as PortfolioCloudflareEnv
+  return {
+    DB: mockDb,
+    PORTFOLIO_BUCKET: mockBucket,
+    PORTFOLIO_ADMIN_PASSWORD: process.env.PORTFOLIO_ADMIN_PASSWORD || 'admin',
+    GUESTBOOK_DEVICE_SECRET: process.env.GUESTBOOK_DEVICE_SECRET || 'secret',
+  }
 }

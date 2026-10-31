@@ -12,3 +12,5 @@ assets-source/
 !.env.example
 worker-configuration.d.ts
 *.tsbuildinfo
+
+.vercel
