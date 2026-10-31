@@ -69,10 +69,7 @@ export async function GET() {
     let about = DEFAULT_ABOUT
     let commissionStatus = 'OPEN'
     let commissionTiers = DEFAULT_TIERS
-    let commissionQueue = [
-      { clientName: 'Client A', artType: 'Character Art', status: 'In Progress' },
-      { clientName: 'Client B', artType: 'Custom Illustration', status: 'In Queue' }
-    ]
+    let commissionQueue: any[] = []
 
     const list = rows.results || []
     for (const row of list) {

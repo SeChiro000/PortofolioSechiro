@@ -73,6 +73,7 @@ export default function CommissionSection() {
         if (data.saved) {
           if (data.commissionQueue && Array.isArray(data.commissionQueue)) {
             setQueueList(data.commissionQueue)
+            localStorage.setItem('sechiro_commission_queue', JSON.stringify(data.commissionQueue))
           }
         }
       })

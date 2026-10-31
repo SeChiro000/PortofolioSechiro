@@ -85,9 +85,11 @@ export default function CommissionsPage() {
           }
           if (data.commissionTiers && Array.isArray(data.commissionTiers)) {
             setCurrentTiers(data.commissionTiers)
+            localStorage.setItem('sechiro_commission_tiers', JSON.stringify(data.commissionTiers))
           }
           if (data.commissionQueue && Array.isArray(data.commissionQueue)) {
             setQueueList(data.commissionQueue)
+            localStorage.setItem('sechiro_commission_queue', JSON.stringify(data.commissionQueue))
           }
         }
       })

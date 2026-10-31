@@ -61,10 +61,7 @@ export default function AdminDashboard() {
   const [entries, setEntries] = useState<GuestbookEntry[]>([])
   const [commissionStatus, setCommissionStatus] = useState<'OPEN' | 'WAITLIST' | 'CLOSED'>('OPEN')
   const [commissionTiers, setCommissionTiers] = useState<CommissionTier[]>(defaultTiers)
-  const [queueItems, setQueueItems] = useState<QueueItem[]>([
-    { clientName: 'Client A', artType: 'Character Art', status: 'In Progress' },
-    { clientName: 'Client B', artType: 'Custom Illustration', status: 'In Queue' }
-  ])
+  const [queueItems, setQueueItems] = useState<QueueItem[]>([])
   const [newClientName, setNewClientName] = useState('')
   const [newArtType, setNewArtType] = useState('Character Art')
   const [newStatus, setNewStatus] = useState<'In Queue' | 'Sketching' | 'In Progress' | 'Completed'>('In Queue')
