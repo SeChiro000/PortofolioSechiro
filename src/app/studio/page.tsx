@@ -117,18 +117,6 @@ export default function StudioPage() {
         } catch {}
       }
 
-      let existing: PortfolioImage[] = []
-      try {
-        const saved = localStorage.getItem('sechiro_custom_artworks')
-        if (saved) {
-          const parsed = JSON.parse(saved)
-          if (Array.isArray(parsed)) existing = parsed
-        }
-      } catch {}
-
-      const updatedLocal = [...newItems, ...existing]
-      localStorage.setItem('sechiro_custom_artworks', JSON.stringify(updatedLocal))
-
       if (fileInput.current) fileInput.current.value = ''
       await refreshImages()
       setMessage('Uploaded. The new work is now in the portfolio gallery.')
