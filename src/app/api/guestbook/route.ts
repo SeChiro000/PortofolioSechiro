@@ -228,5 +228,6 @@ export async function DELETE(request: Request) {
   const filtered = local.filter((item) => item.id !== id)
   writeLocalGuestbook(filtered)
 
-  return NextResponse.json({ success: true }, { headers: { 'Cache-Control': 'no-store' } })
+  const updatedEntries = await readEntries()
+  return NextResponse.json({ success: true, entries: updatedEntries }, { headers: { 'Cache-Control': 'no-store' } })
 }
