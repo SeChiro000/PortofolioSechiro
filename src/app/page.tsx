@@ -82,7 +82,8 @@ export default function Home() {
       {/* Selected Work with Project Details */}
       <WorkGallery />
 
-      <GuestbookSection />
+      {/* Guestbook Section temporarily disabled for security */}
+      {/* <GuestbookSection /> */}
 
       {/* Commission Section */}
       
