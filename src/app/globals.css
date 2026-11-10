@@ -515,3 +515,12 @@ button, a, input, select, textarea, [role="button"], .modal-close-btn {
     display: none !important;
   }
 }
+
+/* Dark Theme Support */
+html.dark-theme body { background: #0f172a !important; color: #f8fafc !important; }
+html.dark-theme .site-header { background: rgba(15, 23, 42, 0.92) !important; border-color: rgba(255, 255, 255, 0.1) !important; color: #f8fafc !important; }
+html.dark-theme .hero-scene-sticky { background: #0f172a !important; }
+html.dark-theme .manifesto, html.dark-theme .work-section, html.dark-theme .social-section { background: #0f172a !important; color: #f8fafc !important; }
+html.dark-theme .gallery-piece { background: #1e293b !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; }
+html.dark-theme .social-card { background: #1e293b !important; color: #f8fafc !important; border-color: rgba(255, 255, 255, 0.1) !important; }
+html.dark-theme .site-footer { background: #0b1120 !important; color: #94a3b8 !important; border-top: 1px solid rgba(255, 255, 255, 0.1) !important; }
