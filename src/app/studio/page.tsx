@@ -53,6 +53,7 @@ export default function StudioPage() {
   const [checkingSession, setCheckingSession] = useState(true)
   const [password, setPassword] = useState('')
   const [category, setCategory] = useState<'SIMPLE' | 'COMPLEX' | 'CHIBI'>('SIMPLE')
+  const [customTitle, setCustomTitle] = useState('')
   const [images, setImages] = useState<PortfolioImage[]>([])
   const [working, setWorking] = useState(false)
   const [message, setMessage] = useState('')
@@ -130,7 +131,8 @@ export default function StudioPage() {
 
         const dataUrl = await convertToWebPDataUrl(file)
 
-        const title = file.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+        const defaultTitle = file.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+        const title = customTitle.trim() || defaultTitle
         const newItem = {
           id: `art-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
           title: title || 'New Artwork',
@@ -150,6 +152,7 @@ export default function StudioPage() {
       }
 
       if (fileInput.current) fileInput.current.value = ''
+      setCustomTitle('')
       await refreshImages()
       setMessage('Uploaded. The new work is now in the portfolio gallery.')
     } catch (reason) {
@@ -206,6 +209,22 @@ export default function StudioPage() {
                 accept="image/jpeg,image/png,image/webp"
                 multiple
                 required
+              />
+              <label className="studio-category-label" htmlFor="artwork-title-input">JUDUL KARYA (OPSIONAL)</label>
+              <input
+                id="artwork-title-input"
+                type="text"
+                placeholder="Misal: Starry Night Dream"
+                value={customTitle}
+                onChange={(e) => setCustomTitle(e.target.value)}
+                style={{
+                  padding: '10px 14px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--line)',
+                  font: '600 12px var(--font-inter), sans-serif',
+                  background: '#fff',
+                  color: 'var(--blue)',
+                }}
               />
               <label className="studio-category-label" htmlFor="portfolio-category">KATEGORI KARYA</label>
               <select id="portfolio-category" className="studio-category-select" value={category} onChange={(event) => setCategory(event.target.value as 'SIMPLE' | 'COMPLEX' | 'CHIBI')}>
