@@ -30,6 +30,30 @@ export default function WorkGallery() {
   const [activeArtwork, setActiveArtwork] = useState<Artwork | null>(null)
   const [uploadedArtworks, setUploadedArtworks] = useState<Artwork[]>([])
   const [activeFilter, setActiveFilter] = useState<'ALL' | 'SIMPLE' | 'COMPLEX' | 'CHIBI'>('ALL')
+
+  const playClickSound = () => {
+    try {
+      const AudioContext = window.AudioContext || (window as any).webkitAudioContext
+      if (!AudioContext) return
+      const ctx = new AudioContext()
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(440, ctx.currentTime)
+      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.05)
+      gain.gain.setValueAtTime(0.05, ctx.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05)
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      osc.start()
+      osc.stop(ctx.currentTime + 0.05)
+    } catch {}
+  }
+
+  const handleOpenArtwork = (piece: Artwork) => {
+    playClickSound()
+    setActiveArtwork(piece)
+  }
   const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
@@ -119,11 +143,11 @@ export default function WorkGallery() {
               exit={{ opacity: 0, scale: 0.94, y: 20 }}
               whileHover={{ y: -6, transition: { duration: 0.25 } }}
               transition={{ duration: 0.5, delay: index * 0.08 }}
-              onClick={() => setActiveArtwork(piece)}
+              onClick={() => handleOpenArtwork(piece)}
               onKeyDown={(event) => {
                 if (event.key === 'Enter' || event.key === ' ') {
                   event.preventDefault()
-                  setActiveArtwork(piece)
+                  handleOpenArtwork(piece)
                 }
               }}
             >
@@ -165,10 +189,10 @@ export default function WorkGallery() {
               role="dialog"
               aria-modal="true"
               aria-labelledby="artwork-modal-title"
-              initial={{ scale: 0.9, y: 40, opacity: 0 }}
+              initial={{ scale: 0.82, y: 50, opacity: 0 }}
               animate={{ scale: 1, y: 0, opacity: 1 }}
-              exit={{ scale: 0.9, y: 30, opacity: 0 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              exit={{ scale: 0.85, y: 30, opacity: 0 }}
+              transition={{ type: 'spring', damping: 18, stiffness: 280, mass: 0.8 }}
               onClick={(e) => e.stopPropagation()}
             >
               <button
