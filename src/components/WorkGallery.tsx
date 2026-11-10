@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 export interface Artwork {
   id: string
   title: string
-  category: 'ILLUSTRATION' | 'CHARACTER'
+  category: 'SIMPLE' | 'COMPLEX' | 'CHIBI'
   year: string
   description?: string
   image: string
@@ -18,7 +18,7 @@ const artworks: Artwork[] = [
   {
     id: 'karasu',
     title: 'KARASU',
-    category: 'CHARACTER',
+    category: 'COMPLEX',
     year: '2026',
     description: 'Original character illustration featuring sharp lines and expressive mood.',
     image: '/karasu-illustration.jpg',

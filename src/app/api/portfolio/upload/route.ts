@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     const file = form.get('file')
     const category = form.get('category')
     if (!(file instanceof File)) return NextResponse.json({ error: 'Choose an image file first.' }, { status: 400 })
-    if (category !== 'CHARACTER' && category !== 'ILLUSTRATION') return NextResponse.json({ error: 'Choose a valid artwork category.' }, { status: 400 })
+    if (typeof category !== 'string' || !['SIMPLE', 'COMPLEX', 'CHIBI'].includes(category)) return NextResponse.json({ error: 'Choose a valid artwork category.' }, { status: 400 })
     const extension = ALLOWED_TYPES[file.type]
     if (!extension) return NextResponse.json({ error: 'Only JPG, PNG, and WebP images are allowed.' }, { status: 415 })
     if (file.size === 0 || file.size > MAX_UPLOAD_SIZE) return NextResponse.json({ error: 'Images must be between 1 byte and 20 MB.' }, { status: 413 })

@@ -10,7 +10,6 @@ import NavBar from '../components/NavBar'
 import IntroLoader from '../components/IntroLoader'
 import ScrollModelScene from '../components/ScrollModelScene'
 import WorkGallery from '../components/WorkGallery'
-import CharacterFab from '../components/CharacterFab'
 import ProximityText from '../components/ProximityText'
 
 const socials = [
@@ -87,7 +86,6 @@ export default function Home() {
 
       {/* Floating UI Elements */}
       <div className="floating-buttons-container">
-        <CharacterFab />
         <button type="button" className="floating-about" aria-label="Open About me" onClick={() => setAboutOpen(true)}>
           <span className="floating-about-label">ABOUT ME</span>
           <motion.span className="floating-about-star" aria-hidden="true">✳</motion.span>

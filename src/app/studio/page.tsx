@@ -15,7 +15,7 @@ export default function StudioPage() {
   const [authenticated, setAuthenticated] = useState(false)
   const [checkingSession, setCheckingSession] = useState(true)
   const [password, setPassword] = useState('')
-  const [category, setCategory] = useState<'ILLUSTRATION' | 'CHARACTER'>('ILLUSTRATION')
+  const [category, setCategory] = useState<'SIMPLE' | 'COMPLEX' | 'CHIBI'>('SIMPLE')
   const [images, setImages] = useState<PortfolioImage[]>([])
   const [working, setWorking] = useState(false)
   const [message, setMessage] = useState('')
@@ -176,9 +176,10 @@ export default function StudioPage() {
                 required
               />
               <label className="studio-category-label" htmlFor="portfolio-category">KATEGORI KARYA</label>
-              <select id="portfolio-category" className="studio-category-select" value={category} onChange={(event) => setCategory(event.target.value as 'ILLUSTRATION' | 'CHARACTER')}>
-                <option value="ILLUSTRATION">Illustration</option>
-                <option value="CHARACTER">Character</option>
+              <select id="portfolio-category" className="studio-category-select" value={category} onChange={(event) => setCategory(event.target.value as 'SIMPLE' | 'COMPLEX' | 'CHIBI')}>
+                <option value="SIMPLE">Simple</option>
+                <option value="COMPLEX">Complex</option>
+                <option value="CHIBI">Chibi</option>
               </select>
               <div className="studio-actions">
                 <button className="studio-upload-button" type="submit" disabled={working}>
