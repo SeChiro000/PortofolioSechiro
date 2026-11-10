@@ -4,32 +4,21 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 
 export default function IntroLoader({ modelReady }: { modelReady: boolean }) {
-  const [pageReady, setPageReady] = useState(false)
-  const [minimumTimeElapsed, setMinimumTimeElapsed] = useState(false)
   const [leaving, setLeaving] = useState(false)
   const [visible, setVisible] = useState(true)
 
   useEffect(() => {
-    const markPageReady = () => setPageReady(true)
-    if (document.readyState === 'complete') markPageReady()
-    else window.addEventListener('load', markPageReady, { once: true })
-
-    const minimumTimer = window.setTimeout(() => setMinimumTimeElapsed(true), 1500)
-    const fallbackTimer = window.setTimeout(() => setLeaving(true), 7000)
+    const timer = window.setTimeout(() => setLeaving(true), 800)
+    const fallbackTimer = window.setTimeout(() => setVisible(false), 1400)
     return () => {
-      window.removeEventListener('load', markPageReady)
-      window.clearTimeout(minimumTimer)
+      window.clearTimeout(timer)
       window.clearTimeout(fallbackTimer)
     }
   }, [])
 
   useEffect(() => {
-    if (pageReady && modelReady && minimumTimeElapsed) setLeaving(true)
-  }, [pageReady, modelReady, minimumTimeElapsed])
-
-  useEffect(() => {
     if (!leaving) return
-    const timer = window.setTimeout(() => setVisible(false), 650)
+    const timer = window.setTimeout(() => setVisible(false), 500)
     return () => window.clearTimeout(timer)
   }, [leaving])
 
@@ -43,7 +32,7 @@ export default function IntroLoader({ modelReady }: { modelReady: boolean }) {
       aria-label="Loading SeChiro portfolio"
       initial={{ opacity: 1 }}
       animate={{ opacity: leaving ? 0 : 1 }}
-      transition={{ duration: 0.65, ease: [0.76, 0, 0.24, 1] }}
+      transition={{ duration: 0.5, ease: [0.76, 0, 0.24, 1] }}
     >
       <div className="intro-content">
         <motion.span
@@ -58,7 +47,7 @@ export default function IntroLoader({ modelReady }: { modelReady: boolean }) {
               key={letter + index}
               initial={{ opacity: 0, y: 24, rotate: 8 }}
               animate={{ opacity: 1, y: 0, rotate: 0 }}
-              transition={{ duration: 0.55, delay: 0.12 + index * 0.07, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.4, delay: 0.05 + index * 0.04, ease: [0.22, 1, 0.36, 1] }}
               aria-hidden="true"
             >
               {letter}
