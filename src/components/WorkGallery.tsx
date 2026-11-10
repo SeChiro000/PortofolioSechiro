@@ -148,32 +148,15 @@ export default function WorkGallery() {
                 ✕
               </button>
 
-              <div className="modal-content-grid">
-                <div className="modal-image-col">
-                  <div className="modal-image-frame">
-                    <Image
-                      src={activeArtwork.image}
-                      alt={activeArtwork.title}
-                      fill
-                      className="object-contain"
-                      unoptimized={activeArtwork.image.startsWith('/api/portfolio/file/')}
-                    />
-                  </div>
-                </div>
-
-                <div className="modal-info-col">
-                  <div className="modal-badge-row">
-                    <span className="modal-tag">[{activeArtwork.category}]</span>
-                    <span className="modal-year">{activeArtwork.year}</span>
-                  </div>
-
-                  <h3 id="artwork-modal-title" className="modal-title">{activeArtwork.title}</h3>
-
-                  <div className="mt-4 pt-4 border-t-2 border-slate-200">
-                    <p className="text-sm text-slate-600 font-medium leading-relaxed">
-                      {activeArtwork.description || 'Hand-crafted digital artwork by SeChiro.'}
-                    </p>
-                  </div>
+              <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                <div style={{ width: '100%', height: '80vh', position: 'relative' }}>
+                  <Image
+                    src={activeArtwork.image}
+                    alt={activeArtwork.title}
+                    fill
+                    className="object-contain"
+                    unoptimized={activeArtwork.image.startsWith('/api/portfolio/file/')}
+                  />
                 </div>
               </div>
             </motion.div>

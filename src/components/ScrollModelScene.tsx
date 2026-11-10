@@ -49,7 +49,6 @@ export default function ScrollModelScene({ onModelReady }: { onModelReady: () =>
 
         <div className="scene-actions">
           <a href="#work">EXPLORE MY WORK <span aria-hidden="true">↓</span></a>
-          <Link href="/commissions">LET’S MAKE SOMETHING <span aria-hidden="true">↗</span></Link>
         </div>
 
         <span className="scene-doodle doodle-one" aria-hidden="true">✦</span>
