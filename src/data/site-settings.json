@@ -4,27 +4,5 @@
     "name": "SECHIRO.",
     "description": "I make expressive character art, playful illustrations, and drawings with a life of their own.",
     "image": "/gallery/aboutme.png"
-  },
-  "commissionStatus": "OPEN",
-  "commissionTiers": [
-    {
-      "id": "chibi",
-      "name": "Chibi / Icon",
-      "price": "IDR 150k - 250k",
-      "description": "Simple cel-shaded chibi illustration or profile avatar."
-    },
-    {
-      "id": "halfbody",
-      "name": "Half Body",
-      "price": "IDR 300k - 450k",
-      "description": "Detailed waist-up character art with clean lines and cell shading."
-    },
-    {
-      "id": "fullbody",
-      "name": "Full Body",
-      "price": "IDR 500k - 750k",
-      "description": "Full-body character design with custom background & 3D model accents."
-    }
-  ],
-  "commissionQueue": []
+  }
 }

@@ -85,8 +85,6 @@ export default function Home() {
       {/* Guestbook Section temporarily disabled for security */}
       {/* <GuestbookSection /> */}
 
-      {/* Commission Section */}
-      
       {/* Floating UI Elements */}
       <div className="floating-buttons-container">
         <CharacterFab />
