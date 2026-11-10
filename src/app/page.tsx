@@ -211,12 +211,17 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="site-footer">
-        <span className="footer-mark">
-          SeChiro<span>✳</span>
-        </span>
-        <p>DRAWN WITH CARE, ON EARTH.</p>
-        <a href="#top">BACK TO TOP ↑</a>
-        <small>© 2026 SeChiro</small>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span className="footer-mark">
+            SeChiro<span>✳</span>
+          </span>
+          <span style={{ fontSize: '9px', opacity: 0.7, fontWeight: 700 }}>• ILLUSTRATION &amp; 3D WORLDS</span>
+        </div>
+        <p style={{ fontFamily: 'var(--font-syne), sans-serif', fontWeight: 800 }}>DRAWN WITH CARE &amp; A LOT OF HEART ✿</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <a href="/studio" style={{ textDecoration: 'underline', fontSize: '9px', fontWeight: 800 }}>STUDIO ADMIN ↗</a>
+          <a href="#top" style={{ padding: '6px 12px', background: 'var(--yellow)', color: 'var(--blue)', borderRadius: '999px', fontWeight: 800, fontSize: '9px' }}>TOP ↑</a>
+        </div>
       </footer>
     </main>
   )
