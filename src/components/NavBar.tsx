@@ -46,7 +46,7 @@ export default function NavBar() {
         >
           <span>{isDark ? '☀️ LIGHT' : '🌙 DARK'}</span>
         </button>
-        <a href="https://discord.gg/GPbmCVhJW" target="_blank" rel="noopener noreferrer" className="nav-commission-btn">
+        <a href="https://discord.com/users/829157863288078336" target="_blank" rel="noopener noreferrer" className="nav-commission-btn">
           <span>DISCORD CHAT</span>
           <span className="star">💬</span>
         </a>

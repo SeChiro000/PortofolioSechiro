@@ -13,7 +13,7 @@ import WorkGallery from '../components/WorkGallery'
 import ProximityText from '../components/ProximityText'
 
 const socials = [
-  { name: 'DISCORD', handle: 'chat with me', icon: '💬', url: 'https://discord.gg/GPbmCVhJW' },
+  { name: 'DISCORD', handle: 'add me / chat', icon: '💬', url: 'https://discord.com/users/829157863288078336' },
   { name: 'TIKTOK', handle: '@chirodisme', icon: '♪', url: 'https://www.tiktok.com/@chirodisme' },
   { name: 'X', handle: '@Kukurubarchive', icon: '𝕏', url: 'https://x.com/Kukurubarchive' },
 ]
