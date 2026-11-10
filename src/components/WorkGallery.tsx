@@ -29,6 +29,7 @@ const artworks: Artwork[] = [
 export default function WorkGallery() {
   const [activeArtwork, setActiveArtwork] = useState<Artwork | null>(null)
   const [uploadedArtworks, setUploadedArtworks] = useState<Artwork[]>([])
+  const [activeFilter, setActiveFilter] = useState<'ALL' | 'SIMPLE' | 'COMPLEX' | 'CHIBI'>('ALL')
 
   useEffect(() => {
     fetch('/api/portfolio?fresh=1')
@@ -48,6 +49,10 @@ export default function WorkGallery() {
   }, [])
 
   const allArtworks = useMemo(() => [...uploadedArtworks, ...artworks], [uploadedArtworks])
+  const filteredArtworks = useMemo(() => {
+    if (activeFilter === 'ALL') return allArtworks
+    return allArtworks.filter(piece => piece.category === activeFilter)
+  }, [allArtworks, activeFilter])
 
   return (
     <section className="work-section" id="work">
@@ -70,12 +75,38 @@ export default function WorkGallery() {
         </motion.h2>
 
         <p className="gallery-note">ORIGINAL CHARACTER <i>✳</i> DIGITAL ILLUSTRATION</p>
+
+        {/* Category Filter Bar */}
+        <div className="gallery-filter-bar">
+          {(['ALL', 'SIMPLE', 'COMPLEX', 'CHIBI'] as const).map((cat) => (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => setActiveFilter(cat)}
+              style={{
+                padding: '6px 16px',
+                borderRadius: '999px',
+                fontSize: '10px',
+                fontWeight: 800,
+                fontFamily: 'var(--font-syne), sans-serif',
+                letterSpacing: '0.08em',
+                border: '1px solid var(--blue)',
+                background: activeFilter === cat ? 'var(--blue)' : '#fff',
+                color: activeFilter === cat ? '#fff' : 'var(--blue)',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Gallery Grid */}
       <div className="work-gallery">
         <AnimatePresence>
-          {allArtworks.map((piece, index) => (
+          {filteredArtworks.map((piece, index) => (
             <motion.figure
               key={piece.id}
               className="gallery-piece piece-illustration"
