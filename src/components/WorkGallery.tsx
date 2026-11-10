@@ -51,12 +51,9 @@ export default function WorkGallery() {
 
   const allArtworks = useMemo(() => [...uploadedArtworks, ...artworks], [uploadedArtworks])
   const filteredArtworks = useMemo(() => {
-    return allArtworks.filter(piece => {
-      const matchCat = activeFilter === 'ALL' || piece.category === activeFilter
-      const matchSearch = !searchQuery || piece.title.toLowerCase().includes(searchQuery.toLowerCase())
-      return matchCat && matchSearch
-    })
-  }, [allArtworks, activeFilter, searchQuery])
+    if (activeFilter === 'ALL') return allArtworks
+    return allArtworks.filter(piece => piece.category === activeFilter)
+  }, [allArtworks, activeFilter])
 
   return (
     <section className="work-section" id="work">
@@ -80,49 +77,30 @@ export default function WorkGallery() {
 
         <p className="gallery-note">ORIGINAL CHARACTER <i>✳</i> DIGITAL ILLUSTRATION</p>
 
-        {/* Category Filter Bar & Search */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: '12px', marginTop: '20px' }}>
-          <div className="gallery-filter-bar" style={{ margin: 0 }}>
-            {(['ALL', 'SIMPLE', 'COMPLEX', 'CHIBI'] as const).map((cat) => (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => setActiveFilter(cat)}
-                style={{
-                  padding: '6px 16px',
-                  borderRadius: '999px',
-                  fontSize: '10px',
-                  fontWeight: 800,
-                  fontFamily: 'var(--font-syne), sans-serif',
-                  letterSpacing: '0.08em',
-                  border: '1px solid var(--blue)',
-                  background: activeFilter === cat ? 'var(--blue)' : '#fff',
-                  color: activeFilter === cat ? '#fff' : 'var(--blue)',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                }}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-          <input
-            type="text"
-            placeholder="Search artwork…"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={{
-              padding: '6px 14px',
-              borderRadius: '999px',
-              border: '1px solid var(--blue)',
-              fontSize: '11px',
-              fontFamily: 'var(--font-inter), sans-serif',
-              outline: 'none',
-              background: '#fff',
-              color: 'var(--blue)',
-              width: '180px',
-            }}
-          />
+        {/* Category Filter Bar */}
+        <div className="gallery-filter-bar" style={{ marginTop: '20px' }}>
+          {(['ALL', 'SIMPLE', 'COMPLEX', 'CHIBI'] as const).map((cat) => (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => setActiveFilter(cat)}
+              style={{
+                padding: '6px 16px',
+                borderRadius: '999px',
+                fontSize: '10px',
+                fontWeight: 800,
+                fontFamily: 'var(--font-syne), sans-serif',
+                letterSpacing: '0.08em',
+                border: '1px solid var(--blue)',
+                background: activeFilter === cat ? 'var(--blue)' : '#fff',
+                color: activeFilter === cat ? '#fff' : 'var(--blue)',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              {cat}
+            </button>
+          ))}
         </div>
       </div>
 
