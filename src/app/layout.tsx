@@ -4,8 +4,8 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'SeChiro — Character Illustrator & Artist',
-  description: 'Hand-drawn character art, playful illustrations, and colorful little worlds. Commissions open — original characters, fanart, and expressive character illustration by SeChiro.',
-  keywords: ['SeChiro', 'character illustration', 'anime art', 'digital illustration', 'character artist', 'commission', 'original characters', 'fanart'],
+  description: 'Hand-drawn character art, playful illustrations, and colorful little worlds. Original characters, fanart, and expressive character illustration by SeChiro.',
+  keywords: ['SeChiro', 'character illustration', 'anime art', 'digital illustration', 'character artist', 'original characters', 'fanart'],
   authors: [{ name: 'SeChiro' }],
   creator: 'SeChiro',
   openGraph: {

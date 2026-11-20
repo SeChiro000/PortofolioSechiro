@@ -301,10 +301,7 @@ export default function WorkGallery() {
 
                   {/* Commission CTA */}
                   <div className="modal-cta-box">
-                    <p className="modal-cta-prompt">Like this style? Commission something similar!</p>
-                    <a href="#commission" className="modal-commission-btn" onClick={() => setActiveArtwork(null)}>
-                      {/* VIEW REMOVED */}
-                    </a>
+                    {/* REMOVED */}
                   </div>
                 </div>
               </div>
