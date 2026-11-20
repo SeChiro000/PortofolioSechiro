@@ -85,9 +85,9 @@ export default function NavBar() {
             href="https://discord.com/users/829157863288078336"
             target="_blank"
             rel="noopener noreferrer"
-            className="nav-commission-btn desktop-only"
+            className="nav-contact-btn desktop-only"
           >
-            <span>DISCORD</span>
+            <span>CONTACT</span>
             <span className="star">💬</span>
           </a>
 
