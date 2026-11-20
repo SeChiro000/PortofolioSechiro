@@ -95,7 +95,8 @@ export default function Footer() {
             <span>Drawn with care & a lot of heart ✿</span>
           </div>
           <div className="footer-bottom-right">
-            <a href="/studio" className="footer-admin-link">STUDIO ↗</a>
+            {/* STUDIO REMOVED */}
+{/* <a href="/studio" className="footer-admin-link">STUDIO ↗</a> */}
             <a href="#top" className="footer-top-btn" aria-label="Back to top">TOP ↑</a>
           </div>
         </div>
