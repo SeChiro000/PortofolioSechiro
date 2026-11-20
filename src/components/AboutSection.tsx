@@ -97,7 +97,6 @@ export default function AboutSection() {
               </p>
             </div>
 
-// Remove Tools Section
 
 
             {/* Specialization */}
@@ -117,7 +116,6 @@ export default function AboutSection() {
               </div>
             </div>
 
-// Remove CTA section
 
           </motion.div>
         </div>
