@@ -39,25 +39,29 @@ export default function Home() {
   }, [])
 
   return (
-    <main className="main-wrapper">
+    <motion.main 
+      initial="initial" animate="in" exit="out" variants={{ initial: { opacity: 0 }, in: { opacity: 1 }, out: { opacity: 0 } }} 
+      transition={{ duration: 0.5 }}
+      className="main-wrapper"
+    >
       <div className="paper-overlay" />
       <IntroLoader modelReady={modelReady} />
       <NavBar />
-      <div style={{ marginTop: '100px', padding: '0 5vw', textAlign: 'center' }}>
+      <div style={{ height: '85vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-start', padding: '0 5vw', textAlign: 'left' }}>
         <motion.h1 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          style={{ fontSize: 'clamp(3rem, 12vw, 8rem)', fontWeight: '800', lineHeight: '0.9', color: 'var(--blue)', marginBottom: '2rem', letterSpacing: '-0.04em' }}
+          style={{ fontSize: 'clamp(4rem, 16vw, 10rem)', fontWeight: '800', lineHeight: '0.85', color: 'var(--blue)', marginBottom: '2.5rem', letterSpacing: '-0.06em' }}
         >
           A LITTLE ODD.<br />
-          <span style={{ color: 'transparent', WebkitTextStroke: '2px var(--blue)' }}>A LOT OF HEART.</span>
+          <span style={{ color: 'transparent', WebkitTextStroke: '3px var(--blue)' }}>A LOT OF HEART.</span>
         </motion.h1>
         <motion.p 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4, duration: 0.8 }}
-          style={{ fontSize: 'clamp(1rem, 2vw, 1.5rem)', maxWidth: '600px', margin: '0 auto', color: 'var(--blue)', opacity: 0.7 }}
+          style={{ fontSize: 'clamp(1rem, 1.5vw, 1.2rem)', maxWidth: '600px', margin: '0', color: 'var(--blue)', opacity: 0.7, lineHeight: '1.4' }}
         >
           Character illustrations, playful objects, and colorful little worlds. 
           Crafting stories and expressions one doodle at a time.
