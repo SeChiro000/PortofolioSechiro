@@ -64,22 +64,7 @@ export default function AboutSection() {
               <span>ILLUSTRATOR & CHARACTER ARTIST</span>
             </div>
 
-            {/* Snapshot */}
-            <motion.div
-              className="about-full-snapshot"
-              initial={{ opacity: 0, rotate: 8, y: 18 }}
-              whileInView={{ opacity: 1, rotate: 6, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.3, type: 'spring', stiffness: 260, damping: 20 }}
-            >
-              <Image
-                src="/gallery/aboutme.png"
-                alt="SeChiro"
-                fill
-                sizes="180px"
-                style={{ objectFit: 'cover' }}
-              />
-            </motion.div>
+{/* Snapshot removed */}
           </motion.div>
 
           {/* Right: Content blocks */}
