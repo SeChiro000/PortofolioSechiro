@@ -2,15 +2,17 @@
 
 import Image from 'next/image'
 
-import GuestbookSection from '@/components/GuestbookSection'
-
 import { useCallback, useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import NavBar from '../components/NavBar'
 import IntroLoader from '../components/IntroLoader'
 import ScrollModelScene from '../components/ScrollModelScene'
 import WorkGallery from '../components/WorkGallery'
+import FeaturedProjects from '../components/FeaturedProjects'
+import AboutSection from '../components/AboutSection'
+import CommissionSection from '../components/CommissionSection'
 import ProximityText from '../components/ProximityText'
+import Footer from '../components/Footer'
 
 const socials = [
   { name: 'DISCORD', handle: 'add me / chat', icon: '💬', url: 'https://discord.com/users/829157863288078336' },
@@ -19,7 +21,7 @@ const socials = [
 ]
 
 export default function Home() {
-  const [modelReady, setModelReady] = useState(false)
+  const [modelReady, setModelReady] = useState(true)
   const [aboutOpen, setAboutOpen] = useState(false)
   const [aboutData, setAboutData] = useState({
     eyebrow: 'THE ARTIST BEHIND THE DOODLES',
@@ -41,7 +43,7 @@ export default function Home() {
       <div className="paper-overlay" />
       <IntroLoader modelReady={modelReady} />
       <NavBar />
-      <ScrollModelScene onModelReady={markModelReady} />
+      <div style={{ marginTop: '100px' }} />
 
       {/* Marquee Banner */}
       <div className="marquee" aria-hidden="true">
@@ -78,13 +80,19 @@ export default function Home() {
         </motion.p>
       </section>
 
-      {/* Selected Work with Project Details */}
+      {/* Selected Works Gallery */}
       <WorkGallery />
 
-      {/* Guestbook Section temporarily disabled for security */}
-      {/* <GuestbookSection /> */}
+      {/* Featured Projects */}
+      <FeaturedProjects />
 
-      {/* Floating UI Elements */}
+      {/* About the Artist */}
+      <AboutSection />
+
+      {/* Commission */}
+      <CommissionSection />
+
+      {/* Floating UI Elements — quick About popup */}
       <div className="floating-buttons-container">
         <button type="button" className="floating-about" aria-label="Open About me" onClick={() => setAboutOpen(true)}>
           <span className="floating-about-label">ABOUT ME</span>
@@ -118,7 +126,7 @@ export default function Home() {
                 <div style={{ flex: 1, textAlign: 'left' }}>
                   <span className="about-popup-spark" aria-hidden="true">✳</span>
                   <p className="eyebrow">{aboutData.eyebrow}</p>
-                  <h2 id="about-popup-title">HI, I’M <span style={{ color: "transparent", WebkitTextStroke: "1.5px var(--blue)" }}>{aboutData.name}</span></h2>
+                  <h2 id="about-popup-title">HI, I&apos;M <span style={{ color: "transparent", WebkitTextStroke: "1.5px var(--blue)" }}>{aboutData.name}</span></h2>
                 </div>
                 
                 <motion.div
@@ -147,7 +155,7 @@ export default function Home() {
 
               <p className="about-popup-copy" style={{ textAlign: 'left' }}>{aboutData.description}</p>
               <div style={{ textAlign: 'left' }}>
-                <a className="about-popup-link" href="#social" onClick={() => setAboutOpen(false)}>FIND ME ELSEWHERE <span aria-hidden="true">↗</span></a>
+                <a className="about-popup-link" href="#about" onClick={() => setAboutOpen(false)}>LEARN MORE ABOUT ME <span aria-hidden="true">↗</span></a>
               </div>
               <motion.div
                 className="about-photo-snapshot"
@@ -180,7 +188,7 @@ export default function Home() {
           <div>
             <p className="eyebrow">ELSEWHERE ON THE INTERNET</p>
             <h2>
-              LET’S BE<br />
+              LET&apos;S BE<br />
               <span>FRIENDS.</span>
             </h2>
           </div>
@@ -209,20 +217,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="site-footer">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span className="footer-mark">
-            SeChiro<span>✳</span>
-          </span>
-          <span style={{ fontSize: '9px', opacity: 0.7, fontWeight: 700 }}>• ILLUSTRATION &amp; 3D WORLDS</span>
-        </div>
-        <p style={{ fontFamily: 'var(--font-syne), sans-serif', fontWeight: 800 }}>DRAWN WITH CARE &amp; A LOT OF HEART ✿</p>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <a href="/studio" style={{ textDecoration: 'underline', fontSize: '9px', fontWeight: 800 }}>STUDIO ADMIN ↗</a>
-          <a href="#top" style={{ padding: '6px 12px', background: 'var(--yellow)', color: 'var(--blue)', borderRadius: '999px', fontWeight: 800, fontSize: '9px' }}>TOP ↑</a>
-        </div>
-      </footer>
+      {/* Enhanced Footer */}
+      <Footer />
     </main>
   )
 }

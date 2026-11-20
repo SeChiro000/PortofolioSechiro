@@ -6,9 +6,17 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 interface PortfolioImage {
   id: string
   title: string
+  category: string
   image: string
   year: string
 }
+
+const CATEGORIES = [
+  { value: 'CHARACTER_ILLUSTRATION', label: 'Character Illustration' },
+  { value: 'ORIGINAL_CHARACTERS', label: 'Original Characters' },
+  { value: 'FANART', label: 'Fanart' },
+  { value: 'PERSONAL_PROJECTS', label: 'Personal Projects' },
+]
 
 async function convertToWebPDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -52,10 +60,12 @@ export default function StudioPage() {
   const [authenticated, setAuthenticated] = useState(false)
   const [checkingSession, setCheckingSession] = useState(true)
   const [password, setPassword] = useState('')
-  const [category, setCategory] = useState<'SIMPLE' | 'COMPLEX' | 'CHIBI'>('SIMPLE')
+  const [category, setCategory] = useState('CHARACTER_ILLUSTRATION')
   const [customTitle, setCustomTitle] = useState('')
+  const [description, setDescription] = useState('')
   const [images, setImages] = useState<PortfolioImage[]>([])
   const [working, setWorking] = useState(false)
+  const [deleting, setDeleting] = useState<string | null>(null)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
 
@@ -120,7 +130,6 @@ export default function StudioPage() {
     setError('')
     setMessage(`Uploading ${files.length} ${files.length === 1 ? 'image' : 'images'}…`)
     try {
-      const newItems: PortfolioImage[] = []
       for (const file of files) {
         if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
           throw new Error(`${file.name} is not a JPG, PNG, or WebP image.`)
@@ -137,10 +146,10 @@ export default function StudioPage() {
           id: `art-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
           title: title || 'New Artwork',
           category: category,
+          description: description.trim() || undefined,
           image: dataUrl,
           year: String(new Date().getFullYear())
         }
-        newItems.push(newItem)
 
         try {
           await fetch('/api/portfolio', {
@@ -153,6 +162,7 @@ export default function StudioPage() {
 
       if (fileInput.current) fileInput.current.value = ''
       setCustomTitle('')
+      setDescription('')
       await refreshImages()
       setMessage('Uploaded. The new work is now in the portfolio gallery.')
     } catch (reason) {
@@ -160,6 +170,32 @@ export default function StudioPage() {
       setError(reason instanceof Error ? reason.message : 'The upload did not finish.')
     } finally {
       setWorking(false)
+    }
+  }
+
+  const deleteImage = async (id: string, title: string) => {
+    const confirmed = window.confirm(`Hapus "${title}" dari portfolio?\n\nAksi ini tidak bisa dibatalkan.`)
+    if (!confirmed) return
+
+    setDeleting(id)
+    setError('')
+    setMessage('')
+    try {
+      const response = await fetch('/api/portfolio', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      })
+      if (!response.ok) {
+        const result = await response.json().catch(() => ({}))
+        throw new Error(result.error || 'Gagal menghapus karya.')
+      }
+      await refreshImages()
+      setMessage(`"${title}" berhasil dihapus.`)
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'Gagal menghapus karya.')
+    } finally {
+      setDeleting(null)
     }
   }
 
@@ -188,7 +224,7 @@ export default function StudioPage() {
         <h1>{authenticated ? 'ADD NEW WORK' : 'SIGN IN'}</h1>
         <p className="studio-intro">
             {authenticated
-          ? 'Tambah gambar ke galeri Cloudflare R2. Nama file menjadi judul, lalu pilih kategori sebelum mengunggah.'
+          ? 'Tambah gambar ke galeri portfolio. Isi judul, pilih kategori, dan tambahkan deskripsi sebelum mengunggah.'
             : 'Sign in to add new images to your portfolio.'}
         </p>
 
@@ -226,11 +262,33 @@ export default function StudioPage() {
                   color: 'var(--blue)',
                 }}
               />
+              <label className="studio-category-label" htmlFor="artwork-description">DESKRIPSI (OPSIONAL)</label>
+              <textarea
+                id="artwork-description"
+                placeholder="Ceritakan tentang karya ini..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={3}
+                style={{
+                  padding: '10px 14px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--line)',
+                  font: '600 12px var(--font-inter), sans-serif',
+                  background: '#fff',
+                  color: 'var(--blue)',
+                  resize: 'vertical',
+                }}
+              />
               <label className="studio-category-label" htmlFor="portfolio-category">KATEGORI KARYA</label>
-              <select id="portfolio-category" className="studio-category-select" value={category} onChange={(event) => setCategory(event.target.value as 'SIMPLE' | 'COMPLEX' | 'CHIBI')}>
-                <option value="SIMPLE">Simple</option>
-                <option value="COMPLEX">Complex</option>
-                <option value="CHIBI">Chibi</option>
+              <select
+                id="portfolio-category"
+                className="studio-category-select"
+                value={category}
+                onChange={(event) => setCategory(event.target.value)}
+              >
+                {CATEGORIES.map((cat) => (
+                  <option key={cat.value} value={cat.value}>{cat.label}</option>
+                ))}
               </select>
               <div className="studio-actions">
                 <button className="studio-upload-button" type="submit" disabled={working}>
@@ -245,9 +303,24 @@ export default function StudioPage() {
               {images.length > 0 ? (
                 <div className="studio-image-grid">
                   {images.map((image) => (
-                    <figure key={image.id}>
-                      <Image src={image.image} alt={image.title} width={120} height={120} unoptimized />
-                      <figcaption>{image.title}</figcaption>
+                    <figure key={image.id} className="studio-image-item">
+                      <div className="studio-image-thumb">
+                        <Image src={image.image} alt={image.title} width={120} height={120} unoptimized />
+                        <button
+                          type="button"
+                          className="studio-delete-btn"
+                          onClick={() => deleteImage(image.id, image.title)}
+                          disabled={deleting === image.id}
+                          aria-label={`Delete ${image.title}`}
+                          title={`Hapus ${image.title}`}
+                        >
+                          {deleting === image.id ? '…' : '✕'}
+                        </button>
+                      </div>
+                      <figcaption>
+                        <span className="studio-image-title">{image.title}</span>
+                        <span className="studio-image-cat">{image.category}</span>
+                      </figcaption>
                     </figure>
                   ))}
                 </div>

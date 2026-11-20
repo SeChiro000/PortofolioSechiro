@@ -7,29 +7,65 @@ import { motion, AnimatePresence } from 'framer-motion'
 export interface Artwork {
   id: string
   title: string
-  category: 'SIMPLE' | 'COMPLEX' | 'CHIBI'
+  category: string
   year: string
   description?: string
   image: string
   aspectRatio: string
+  tools?: string[]
+}
+
+const FILTER_CATEGORIES = [
+  { value: 'ALL', label: 'All' },
+  { value: 'CHARACTER_ILLUSTRATION', label: 'Character Illustration' },
+  { value: 'ORIGINAL_CHARACTERS', label: 'Original Characters' },
+  { value: 'FANART', label: 'Fanart' },
+  { value: 'PERSONAL_PROJECTS', label: 'Personal Projects' },
+] as const
+
+type FilterValue = typeof FILTER_CATEGORIES[number]['value']
+
+/* Map legacy categories to new filter system for backward compat */
+function mapCategory(cat: string): FilterValue {
+  const upper = cat.toUpperCase()
+  const mapping: Record<string, FilterValue> = {
+    'SIMPLE': 'CHARACTER_ILLUSTRATION',
+    'COMPLEX': 'CHARACTER_ILLUSTRATION',
+    'CHIBI': 'CHARACTER_ILLUSTRATION',
+    'CHARACTER': 'ORIGINAL_CHARACTERS',
+    'ILLUSTRATION': 'CHARACTER_ILLUSTRATION',
+    'CHARACTER_ILLUSTRATION': 'CHARACTER_ILLUSTRATION',
+    'ORIGINAL_CHARACTERS': 'ORIGINAL_CHARACTERS',
+    'FANART': 'FANART',
+    'PERSONAL_PROJECTS': 'PERSONAL_PROJECTS',
+  }
+  return mapping[upper] || 'CHARACTER_ILLUSTRATION'
+}
+
+/* Display label for a category */
+function categoryLabel(cat: string): string {
+  const mapped = mapCategory(cat)
+  const found = FILTER_CATEGORIES.find(f => f.value === mapped)
+  return found?.label || cat
 }
 
 const artworks: Artwork[] = [
   {
     id: 'karasu',
     title: 'KARASU',
-    category: 'COMPLEX',
+    category: 'CHARACTER_ILLUSTRATION',
     year: '2026',
     description: 'Original character illustration featuring sharp lines and expressive mood.',
     image: '/karasu-illustration.jpg',
     aspectRatio: 'aspect-[0.94/1]',
+    tools: ['Clip Studio Paint'],
   },
 ]
 
 export default function WorkGallery() {
   const [activeArtwork, setActiveArtwork] = useState<Artwork | null>(null)
   const [uploadedArtworks, setUploadedArtworks] = useState<Artwork[]>([])
-  const [activeFilter, setActiveFilter] = useState<'ALL' | 'SIMPLE' | 'COMPLEX' | 'CHIBI'>('ALL')
+  const [activeFilter, setActiveFilter] = useState<FilterValue>('ALL')
 
   const playClickSound = () => {
     try {
@@ -54,7 +90,26 @@ export default function WorkGallery() {
     playClickSound()
     setActiveArtwork(piece)
   }
-  const [searchQuery, setSearchQuery] = useState('')
+
+  /* Close lightbox on Escape */
+  useEffect(() => {
+    if (!activeArtwork) return
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setActiveArtwork(null)
+    }
+    document.addEventListener('keydown', handleKey)
+    return () => document.removeEventListener('keydown', handleKey)
+  }, [activeArtwork])
+
+  /* Lock body scroll when lightbox is open */
+  useEffect(() => {
+    if (activeArtwork) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => { document.body.style.overflow = '' }
+  }, [activeArtwork])
 
   useEffect(() => {
     fetch('/api/portfolio?fresh=1')
@@ -76,7 +131,7 @@ export default function WorkGallery() {
   const allArtworks = useMemo(() => [...uploadedArtworks, ...artworks], [uploadedArtworks])
   const filteredArtworks = useMemo(() => {
     if (activeFilter === 'ALL') return allArtworks
-    return allArtworks.filter(piece => piece.category === activeFilter)
+    return allArtworks.filter((piece) => mapCategory(piece.category) === activeFilter)
   }, [allArtworks, activeFilter])
 
   return (
@@ -88,7 +143,7 @@ export default function WorkGallery() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          A FEW THINGS I’VE MADE
+          A FEW THINGS I&apos;VE MADE
         </motion.p>
         <motion.h2
           initial={{ opacity: 0, y: 24 }}
@@ -102,27 +157,16 @@ export default function WorkGallery() {
         <p className="gallery-note">ORIGINAL CHARACTER <i>✳</i> DIGITAL ILLUSTRATION</p>
 
         {/* Category Filter Bar */}
-        <div className="gallery-filter-bar" style={{ marginTop: '20px' }}>
-          {(['ALL', 'SIMPLE', 'COMPLEX', 'CHIBI'] as const).map((cat) => (
+        <div className="gallery-filter-bar">
+          {FILTER_CATEGORIES.map((cat) => (
             <button
-              key={cat}
+              key={cat.value}
               type="button"
-              onClick={() => setActiveFilter(cat)}
-              style={{
-                padding: '6px 16px',
-                borderRadius: '999px',
-                fontSize: '10px',
-                fontWeight: 800,
-                fontFamily: 'var(--font-syne), sans-serif',
-                letterSpacing: '0.08em',
-                border: '1px solid var(--blue)',
-                background: activeFilter === cat ? 'var(--blue)' : '#fff',
-                color: activeFilter === cat ? '#fff' : 'var(--blue)',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-              }}
+              className={`filter-pill${activeFilter === cat.value ? ' active' : ''}`}
+              onClick={() => setActiveFilter(cat.value)}
             >
-              {cat}
+              {activeFilter === cat.value && <span className="filter-star" aria-hidden="true">✳</span>}
+              {cat.label}
             </button>
           ))}
         </div>
@@ -158,14 +202,15 @@ export default function WorkGallery() {
                   fill
                   sizes="(max-width: 760px) 90vw, 44vw"
                   className="piece-img"
-                  unoptimized={piece.image.startsWith('/api/portfolio/file/')}
+                  unoptimized={piece.image.startsWith('/api/portfolio/file/') || piece.image.startsWith('data:')}
                 />
               </div>
 
-              {/* Hover Badge / Overlay */}
+              {/* Hover overlay */}
               <div className="piece-overlay">
-                <span className="overlay-cat">{piece.category}</span>
-                <span className="overlay-view">EXPAND ↗</span>
+                <span className="overlay-cat">{categoryLabel(piece.category)}</span>
+                <span className="overlay-title">{piece.title}</span>
+                <span className="overlay-view">VIEW ↗</span>
               </div>
 
               <span className="art-spark" aria-hidden="true">✳</span>
@@ -174,7 +219,18 @@ export default function WorkGallery() {
         </AnimatePresence>
       </div>
 
-      {/* Artwork Lightbox Modal */}
+      {/* Empty state */}
+      {filteredArtworks.length === 0 && (
+        <motion.p
+          className="gallery-empty"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          No artwork in this category yet. Check back soon! ✳
+        </motion.p>
+      )}
+
+      {/* Enhanced Artwork Lightbox Modal */}
       <AnimatePresence>
         {activeArtwork && (
           <motion.div
@@ -204,15 +260,52 @@ export default function WorkGallery() {
                 ✕
               </button>
 
-              <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-                <div style={{ width: '100%', height: '80vh', position: 'relative' }}>
-                  <Image
-                    src={activeArtwork.image}
-                    alt={activeArtwork.title}
-                    fill
-                    className="object-contain"
-                    unoptimized={activeArtwork.image.startsWith('/api/portfolio/file/')}
-                  />
+              <div className="modal-content-grid">
+                {/* Image column */}
+                <div className="modal-image-col">
+                  <div className="modal-image-frame">
+                    <Image
+                      src={activeArtwork.image}
+                      alt={activeArtwork.title}
+                      fill
+                      className="object-contain"
+                      unoptimized={activeArtwork.image.startsWith('/api/portfolio/file/') || activeArtwork.image.startsWith('data:')}
+                    />
+                  </div>
+                </div>
+
+                {/* Info column */}
+                <div className="modal-info-col">
+                  <div>
+                    <div className="modal-badge-row">
+                      <span className="modal-tag">{categoryLabel(activeArtwork.category)}</span>
+                      <span className="modal-year">{activeArtwork.year}</span>
+                    </div>
+                    <h3 className="modal-title" id="artwork-modal-title">{activeArtwork.title}</h3>
+                    <p className="modal-desc">
+                      {activeArtwork.description || 'Original artwork by SeChiro.'}
+                    </p>
+
+                    {/* Tools */}
+                    {activeArtwork.tools && activeArtwork.tools.length > 0 && (
+                      <div className="modal-tools">
+                        <span className="tools-label">TOOLS</span>
+                        <div className="tools-tags">
+                          {activeArtwork.tools.map((tool) => (
+                            <span key={tool} className="tool-chip">{tool}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Commission CTA */}
+                  <div className="modal-cta-box">
+                    <p className="modal-cta-prompt">Like this style? Commission something similar!</p>
+                    <a href="#commission" className="modal-commission-btn" onClick={() => setActiveArtwork(null)}>
+                      ✳ VIEW COMMISSION INFO
+                    </a>
+                  </div>
                 </div>
               </div>
             </motion.div>
