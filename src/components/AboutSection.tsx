@@ -3,7 +3,12 @@
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 
-  // Remove tools array to clean up code
+const tools = [
+  { name: 'Clip Studio Paint', icon: '🎨' },
+  { name: 'Photoshop', icon: '🖌️' },
+  { name: 'Blender', icon: '🧊' },
+  { name: 'Procreate', icon: '✏️' },
+]
 
 const specializations = [
   'Character Illustration',
@@ -59,7 +64,7 @@ export default function AboutSection() {
               <span>ILLUSTRATOR & CHARACTER ARTIST</span>
             </div>
 
-            {/* Photo snapshot decoration */}
+            {/* Snapshot */}
             <motion.div
               className="about-full-snapshot"
               initial={{ opacity: 0, rotate: 8, y: 18 }}
@@ -68,8 +73,8 @@ export default function AboutSection() {
               transition={{ delay: 0.3, type: 'spring', stiffness: 260, damping: 20 }}
             >
               <Image
-                src="/gallery/content-2.jpg"
-                alt="Additional artwork"
+                src="/gallery/aboutme.png"
+                alt="SeChiro"
                 fill
                 sizes="180px"
                 style={{ objectFit: 'cover' }}
@@ -107,23 +112,8 @@ export default function AboutSection() {
               </p>
             </div>
 
-            {/* Tools */}
-            <div className="about-block about-tools-block">
-              <h3><span className="block-icon" aria-hidden="true">✳</span> TOOLS & SOFTWARE</h3>
-              <div className="about-chip-grid">
-                {tools.map((tool) => (
-                  <motion.span
-                    key={tool.name}
-                    className="about-chip tool-chip"
-                    whileHover={{ y: -3, scale: 1.04 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <span className="chip-icon" aria-hidden="true">{tool.icon}</span>
-                    {tool.name}
-                  </motion.span>
-                ))}
-              </div>
-            </div>
+// Remove Tools Section
+
 
             {/* Specialization */}
             <div className="about-block about-spec-block">
@@ -142,12 +132,8 @@ export default function AboutSection() {
               </div>
             </div>
 
-            {/* CTA */}
-            <div className="about-block">
-              <a href="#commission" className="about-cta-btn">
-                SEE COMMISSION INFO <span aria-hidden="true">↓</span>
-              </a>
-            </div>
+// Remove CTA section
+
           </motion.div>
         </div>
       </div>
