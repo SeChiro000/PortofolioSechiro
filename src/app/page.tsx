@@ -44,13 +44,24 @@ export default function Home() {
       <IntroLoader modelReady={modelReady} />
       <NavBar />
       <div style={{ marginTop: '100px', padding: '0 5vw', textAlign: 'center' }}>
-        <h1 style={{ fontFamily: 'var(--font-syne), sans-serif', fontSize: 'clamp(2rem, 8vw, 4rem)', fontWeight: 800, color: 'var(--blue)', marginBottom: '1rem' }}>
-          A LITTLE ODD. <br />A LOT OF HEART.
-        </h1>
-        <p style={{ maxWidth: '600px', margin: '0 auto', fontSize: 'clamp(1rem, 2vw, 1.25rem)', color: 'var(--blue)', opacity: 0.8 }}>
+        <motion.h1 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          style={{ fontSize: 'clamp(3rem, 12vw, 8rem)', fontWeight: '800', lineHeight: '0.9', color: 'var(--blue)', marginBottom: '2rem', letterSpacing: '-0.04em' }}
+        >
+          A LITTLE ODD.<br />
+          <span style={{ color: 'transparent', WebkitTextStroke: '2px var(--blue)' }}>A LOT OF HEART.</span>
+        </motion.h1>
+        <motion.p 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4, duration: 0.8 }}
+          style={{ fontSize: 'clamp(1rem, 2vw, 1.5rem)', maxWidth: '600px', margin: '0 auto', color: 'var(--blue)', opacity: 0.7 }}
+        >
           Character illustrations, playful objects, and colorful little worlds. 
           Crafting stories and expressions one doodle at a time.
-        </p>
+        </motion.p>
       </div>
 
       {/* Marquee Banner */}
