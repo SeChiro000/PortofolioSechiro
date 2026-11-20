@@ -3,12 +3,7 @@
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 
-const tools = [
-  { name: 'Clip Studio Paint', icon: '🎨' },
-  { name: 'Photoshop', icon: '🖌️' },
-  { name: 'Blender', icon: '🧊' },
-  { name: 'Procreate', icon: '✏️' },
-]
+  // Remove tools array to clean up code
 
 const specializations = [
   'Character Illustration',

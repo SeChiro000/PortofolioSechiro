@@ -10,7 +10,7 @@ import ScrollModelScene from '../components/ScrollModelScene'
 import WorkGallery from '../components/WorkGallery'
 import FeaturedProjects from '../components/FeaturedProjects'
 import AboutSection from '../components/AboutSection'
-import CommissionSection from '../components/CommissionSection'
+// No commission section imports
 import ProximityText from '../components/ProximityText'
 import Footer from '../components/Footer'
 
@@ -43,7 +43,15 @@ export default function Home() {
       <div className="paper-overlay" />
       <IntroLoader modelReady={modelReady} />
       <NavBar />
-      <div style={{ marginTop: '100px' }} />
+      <div style={{ marginTop: '100px', padding: '0 5vw', textAlign: 'center' }}>
+        <h1 style={{ fontFamily: 'var(--font-syne), sans-serif', fontSize: 'clamp(2rem, 8vw, 4rem)', fontWeight: 800, color: 'var(--blue)', marginBottom: '1rem' }}>
+          A LITTLE ODD. <br />A LOT OF HEART.
+        </h1>
+        <p style={{ maxWidth: '600px', margin: '0 auto', fontSize: 'clamp(1rem, 2vw, 1.25rem)', color: 'var(--blue)', opacity: 0.8 }}>
+          Character illustrations, playful objects, and colorful little worlds. 
+          Crafting stories and expressions one doodle at a time.
+        </p>
+      </div>
 
       {/* Marquee Banner */}
       <div className="marquee" aria-hidden="true">
@@ -90,7 +98,7 @@ export default function Home() {
       <AboutSection />
 
       {/* Commission */}
-      <CommissionSection />
+      {/* Commission section removed for safety */}
 
       {/* Floating UI Elements — quick About popup */}
       <div className="floating-buttons-container">
