@@ -44,7 +44,7 @@ const projects: Project[] = [
       { label: 'LINEART', image: '/karasu-illustration.jpg', note: 'Clean linework with emphasis on sharp, confident strokes.' },
       { label: 'FINAL', image: '/karasu-illustration.jpg', note: 'Full rendering with lighting, shading, and color adjustments.' },
     ],
-    tools: ['Clip Studio Paint', 'Photoshop'],
+    tools: ['Krita'],
   },
 ]
 
