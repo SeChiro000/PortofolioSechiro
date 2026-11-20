@@ -94,7 +94,7 @@ export default function Home() {
       {/* Featured Projects */}
       <FeaturedProjects />
 
-      {/* About the Artist */}
+      {/* About */}
       <AboutSection />
 
       {/* Commission */}
